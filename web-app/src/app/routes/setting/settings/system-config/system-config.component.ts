@@ -46,9 +46,11 @@ export class SystemConfigComponent implements OnInit {
 
   loading = true;
   config!: SystemConfig;
+  timezones: Array<{ zoneId: string; offset: string; displayName: string }> = [];
 
   ngOnInit(): void {
     this.loadSystemConfig();
+    this.loadTimezones();
   }
 
   loadSystemConfig() {
@@ -58,7 +60,7 @@ export class SystemConfigComponent implements OnInit {
         if (message.code === 0) {
           if (message.data) {
             this.config = message.data;
-            this.changeTheme(this.config.theme); // update theme after config is loaded
+            this.config.theme = this.themeService.getTheme() || 'default';
           } else {
             this.config = new SystemConfig();
           }
@@ -72,6 +74,23 @@ export class SystemConfigComponent implements OnInit {
         console.error(error.msg);
         this.loading = false;
         configInit$.unsubscribe();
+      }
+    );
+  }
+
+  loadTimezones() {
+    this.configService.getTimezones().subscribe(
+      message => {
+        if (message.code === 0 && Array.isArray(message.data)) {
+          this.timezones = message.data;
+        } else {
+          this.timezones = [];
+        }
+        this.cdr.markForCheck();
+      },
+      error => {
+        this.timezones = [];
+        this.cdr.markForCheck();
       }
     );
   }
@@ -94,6 +113,7 @@ export class SystemConfigComponent implements OnInit {
             this.i18nSvc.loadLangData(language).subscribe(res => {
               this.i18nSvc.use(language, res);
               this.settings.setLayout('lang', language);
+              this.themeService.setTheme(this.config.theme);
               setTimeout(() => this.doc.location.reload());
             });
           } else {
@@ -104,9 +124,5 @@ export class SystemConfigComponent implements OnInit {
           this.notifySvc.error(this.i18nSvc.fanyi('common.notify.apply-fail'), error.msg);
         }
       );
-  }
-
-  changeTheme(theme: string): void {
-    this.themeService.changeTheme(theme);
   }
 }

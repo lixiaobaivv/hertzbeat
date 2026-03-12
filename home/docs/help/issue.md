@@ -19,7 +19,24 @@ sidebar_label: Common issues
 
    > The deployment of the installation package requires configuring the root permission of the Java virtual machine to start hertzbeat to use ICMP. If the root permission is not enabled, judge whether port 7 of telnet opposite end is opened.  
    > When you install HertzBeat via DockerDocker root is enabled by default. No such problem.  
-   > See <https://stackoverflow.com/questions/11506321/how-to-ping-an-ip-address>
+   > See [https://stackoverflow.com/questions/11506321/how-to-ping-an-ip-address](https://stackoverflow.com/questions/11506321/how-to-ping-an-ip-address)
+
+4. Configured Kubernetes monitoring, but the actual monitoring is not executing at the correct interval  
+   Please troubleshoot the issue by following these steps:
+
+   > 1. First, check HertzBeat's error logs. If you see the message 'desc: SQL statement too long, check maxSQLLength config',
+   > 2. You need to adjust the TDengine configuration file. Create a taos.cfg file on the server and modify # max length of an SQL : maxSQLLength 654800, then restart TDengine. Ensure the configuration file is properly mounted.
+   > 3. If TDengine fails to restart, adjust the configuration in the mounted data file. Refer to .../taosdata/dnode/dnodeEps.json and change dnodeFqdn to the Docker ID of the failed startup instance, then run docker restart tdengine.
+
+5. Configured HTTP API monitoring for business interface probing to ensure service availability. The API has token authentication, e.g., "Authorization: Bearer eyJhbGciOiJIUzI1....". After configuration, testing returns "StatusCode 401". The server receives the token as "Authorization: Bearer%20eyJhbGciOiJIUzI1....". HertzBeat escapes spaces to %20, but the server does not unescape it, causing authentication failure. It is recommended to make the escaping feature optional.
+
+6. What is the task limit for a single collector?
+
+   > In current versions, the default collector concurrency limit is `512` concurrent collection tasks when virtual threads are enabled.  
+   > This default is intentionally higher than the legacy CPU-based pool size so a single HertzBeat node can carry more blocking collection work before you need extra collectors.  
+   > If the runtime exceeds the configured collector limit, an error will appear: "the worker pool is full, reject this metrics task, put in queue again".  
+   > You can tune this limit through `hertzbeat.vthreads.collector.max-concurrent-jobs` in `application.yml`.  
+   > If a single node still cannot absorb the workload, configure additional collectors in public mode so HertzBeat can distribute tasks across them.
 
 ### Docker Deployment common issues
 
@@ -29,7 +46,7 @@ sidebar_label: Common issues
    > Solution A：Configure application.yml. Change database connection address from localhost to external IP of the host machine.  
    > Solution B：Use the Host network mode to start Docker, namely making Docker container and hosting share network. `docker run -d --network host .....`
 
-2. **According to the process deploy，visit <http://ip:1157/> no interface**
+2. **According to the process deploy，visit [http://ip:1157/](http://ip:1157/) no interface**
    Please refer to the following points to troubleshoot issues：
 
    > one：Whether the MySQL database and tdengine database as dependent services have been successfully started, whether the corresponding hertzbeat database has been created, and whether the SQL script has been executed.
@@ -43,7 +60,7 @@ sidebar_label: Common issues
 
 ### Package Deployment common issues
 
-1. **According to the process deploy，visit <http://ip:1157/> no interface**
+1. **According to the process deploy，visit [http://ip:1157/](http://ip:1157/) no interface**
    Please refer to the following points to troubleshoot issues:
 
    > one：Whether the MySQL database and tdengine database as dependent services have been successfully started, whether the corresponding hertzbeat database has been created, and whether the SQL script has been executed.  

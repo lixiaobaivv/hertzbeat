@@ -4,14 +4,14 @@ title: How to Release
 sidebar_position: 4
 ---
 
-This tutorial describes in detail how to release Apache HertzBeat, take the release of version 1.6.0 as an example.
+This tutorial describes in detail how to release Apache HertzBeat™, take the release of version 1.7.3 as an example.
 
 ## 1. Environmental requirements
 
 This release process is operated in the UbuntuOS(Windows,Mac), and the following tools are required:
 
-- JDK 17
-- Node18 Yarn
+- JDK 21
+- Node18 pnpm
 - Apache Maven 3.x
 - GnuPG 2.x
 - Git
@@ -49,10 +49,10 @@ What keysize do you want? (3072) 4096 # Please enter 4096 here
 Requested keysize is 4096 bits
 Please specify how long the key should be valid.
 0 = key does not expire
-<n> = key expires in n days
-<n>w = key expires in n weeks
-<n>m = key expires in n months
-<n>y = key expires in n years
+`<n>` = key expires in n days
+`<n>`w = key expires in n weeks
+`<n>`m = key expires in n months
+`<n>`y = key expires in n years
 Key is valid for? (0) 0 # Please enter 0
 Key does not expire at all
 Is this correct? (y/N) y # Please enter y here
@@ -63,7 +63,7 @@ Real name: muchunjin # Please enter 'gpg real name'
 Email address: muchunjin@apache.org # Please enter your apache email address here
 Comment: apache key # Please enter some comments here
 You selected this USER-ID:
-    "muchunjin (apache key) <muchunjin@apache.org>"
+    "muchunjin (apache key) [muchunjin@apache.org](mailto:muchunjin@apache.org)"
 
 Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? O # Please enter O here
 We need to generate a lot of random bytes. It is a good idea to perform
@@ -71,7 +71,7 @@ some other action (type on the keyboard, move the mouse, utilize the
 disks) during the prime generation; this gives the random number
 generator a better chance to gain enough entropy.
 
-# At this time, a dialog box will pop up, asking you to enter the key for this gpg. 
+# At this time, a dialog box will pop up, asking you to enter the key for this gpg.
 # you need to remember that it will be used in subsequent steps.
 ┌─────────────────────────────────────────────────────┐
 │ Please enter this passphrase to                     │
@@ -79,7 +79,7 @@ generator a better chance to gain enough entropy.
 │                                                     │
 │ Passphrase: _______________________________________ │
 │                                                     │
-│     <OK>                    <Cancel>                │
+│     `<OK>`                    `<Cancel>`                │
 └─────────────────────────────────────────────────────┘
 
 # Here you need to re-enter the password in the previous step.
@@ -88,7 +88,7 @@ generator a better chance to gain enough entropy.
 │                                                     │
 │ Passphrase: _______________________________________ │
 │                                                     │
-│     <OK>                    <Cancel>                │
+│     `<OK>`                    `<Cancel>`                │
 └─────────────────────────────────────────────────────┘
 gpg: key ACFB69E705016886 marked as ultimately trusted
 gpg: revocation certificate stored as '/root/.gnupg/openpgp-revocs.d/DC12398CCC33A5349EB9663DF9D970AB18C9EDF6.rev'
@@ -96,7 +96,7 @@ public and secret key created and signed.
 
 pub   rsa4096 2023-05-01 [SC]
       85778A4CE4DD04B7E07813ABACFB69E705016886
-uid                      muchunjin (apache key) <muchunjin@apache.org>
+uid                      muchunjin (apache key) [muchunjin@apache.org](mailto:muchunjin@apache.org)
 sub   rsa4096 2023-05-01 [E]
 ```
 
@@ -110,7 +110,7 @@ $ gpg --keyid-format SHORT --list-keys
 ------------------------
 pub   rsa4096/05016886 2023-05-01 [SC]
       85778A4CE4DD04B7E07813ABACFB69E705016886
-uid         [ultimate] muchunjin (apache key) <muchunjin@apache.org>
+uid         [ultimate] muchunjin (apache key) [muchunjin@apache.org](mailto:muchunjin@apache.org)
 sub   rsa4096/0C5A4E1C 2023-05-01 [E]
 
 # Send public key to keyserver via key id
@@ -124,17 +124,17 @@ Verify whether it is synchronized to the public network, it will take about a mi
 
 ```shell
 $ gpg --keyserver keyserver.ubuntu.com --recv-keys 05016886   # If the following content appears, it means success
-gpg: key ACFB69E705016886: "muchunjin (apache key) <muchunjin@apache.org>" not changed
+gpg: key ACFB69E705016886: "muchunjin (apache key) [muchunjin@apache.org](mailto:muchunjin@apache.org)" not changed
 gpg: Total number processed: 1
 gpg:              unchanged: 1
 ```
 
-Or enter <https://keyserver.ubuntu.com/> address in the browser, enter the name of the key and click 'Search key' to search if existed.
+Or enter [https://keyserver.ubuntu.com/](https://keyserver.ubuntu.com/) address in the browser, enter the name of the key and click 'Search key' to search if existed.
 
 #### 2.4 Add the gpg public key to the KEYS file of the Apache SVN project repo
 
-- Apache HertzBeat Branch Dev <https://dist.apache.org/repos/dist/dev/incubator/hertzbeat>
-- Apache HertzBeat Branch Release <https://dist.apache.org/repos/dist/release/incubator/hertzbeat>
+- Apache HertzBeat™ Branch Dev [https://dist.apache.org/repos/dist/dev/hertzbeat](https://dist.apache.org/repos/dist/dev/hertzbeat)
+- Apache HertzBeat™ Branch Release [https://dist.apache.org/repos/dist/release/hertzbeat](https://dist.apache.org/repos/dist/release/hertzbeat)
 
 ##### 2.4.1 Add public key to KEYS in dev branch
 
@@ -142,11 +142,11 @@ Or enter <https://keyserver.ubuntu.com/> address in the browser, enter the name 
 $ mkdir -p svn/dev
 $ cd svn/dev
 
-$ svn co https://dist.apache.org/repos/dist/dev/incubator/hertzbeat
+$ svn co https://dist.apache.org/repos/dist/dev/hertzbeat
 $ cd svn/dev/hertzbeat
 
 # Append the KEY you generated to the file KEYS, and check if it is added correctly
-$ (gpg --list-sigs muchunjin@apache.org && gpg --export --armor muchunjin@apache.org) >> KEYS 
+$ (gpg --list-sigs muchunjin@apache.org && gpg --export --armor muchunjin@apache.org) >> KEYS
 
 $ svn ci -m "add gpg key for muchunjin"
 ```
@@ -157,11 +157,11 @@ $ svn ci -m "add gpg key for muchunjin"
 $ mkdir -p svn/release
 $ cd svn/release
 
-$ svn co https://dist.apache.org/repos/dist/release/incubator/hertzbeat
+$ svn co https://dist.apache.org/repos/dist/release/hertzbeat
 $ cd svn/release/hertzbeat
 
 # Append the KEY you generated to the file KEYS, and check if it is added correctly
-$ (gpg --list-sigs muchunjin@apache.org && gpg --export --armor muchunjin@apache.org) >> KEYS 
+$ (gpg --list-sigs muchunjin@apache.org && gpg --export --armor muchunjin@apache.org) >> KEYS
 
 $ svn ci -m "add gpg key for muchunjin"
 ```
@@ -170,17 +170,17 @@ $ svn ci -m "add gpg key for muchunjin"
 
 ### Build Package
 
-#### 3.1 Based on the master branch, create a release-${release_version}-rcx branch, such as release-1.6.0-rc1, And create a tag named v1.6.0-rc1 based on the release-1.6.0-rc1 branch, and set this tag as pre-release
+#### 3.1 Based on the master branch, create a release-`release_version`-rcx branch, such as release-1.7.3-rc1, And create a tag named v1.7.3-rc1 based on the release-1.7.3-rc1 branch, and set this tag as pre-release
 
 ```shell
 git checkout master
-git checkout -b release-1.6.0-rc1
+git checkout -b release-1.7.3-rc1
 ```
 
 #### 3.2 checkout release branch to local
 
 ```shell
-git checkout release-1.6.0-rc1
+git checkout release-1.7.3-rc1
 ```
 
 #### 3.3 Compile the binary package
@@ -188,9 +188,9 @@ git checkout release-1.6.0-rc1
 > Build HertzBeat server binary, run script in `web-app`
 
 ```shell
-yarn install
+pnpm install
 
-yarn package
+pnpm package
 ```
 
 > run script in root
@@ -213,8 +213,9 @@ mvn clean package -Pcluster
 
 The release package are here:
 
-- `dist/apache-hertzbeat-{version}-incubating-bin.tar.gz`
-- `dist/apache-hertzbeat-collector-{version}-incubating-bin.tar.gz`
+- `dist/apache-hertzbeat-{version}-bin.tar.gz`
+- `dist/apache-hertzbeat-collector-{version}-bin.tar.gz`
+- `dist/apache-hertzbeat-{version}-docker-compose.tar.gz`
 
 #### 3.4 Package the source code
 
@@ -223,12 +224,12 @@ The release package are here:
 ```shell
 git archive \
 --format=tar.gz \
---output="dist/apache-hertzbeat-1.6.0-incubating-src.tar.gz" \
---prefix=apache-hertzbeat-1.6.0-incubating-src/ \
-release-1.6.0-rc1
+--output="dist/apache-hertzbeat-1.7.3-src.tar.gz" \
+--prefix=apache-hertzbeat-1.7.3-src/ \
+release-1.7.3-rc1
 ```
 
-The archive package is here `dist/apache-hertzbeat-1.6.0-incubating-src.tar.gz`
+The archive package is here `dist/apache-hertzbeat-1.7.3-src.tar.gz`
 
 ### Sign package
 
@@ -251,15 +252,18 @@ for i in *.tar.gz; do echo $i; sha512sum $i > $i.sha512 ; done
 > The final file list is as follows
 
 ```text
-apache-hertzbeat-1.6.0-incubating-src.tar.gz
-apache-hertzbeat-1.6.0-incubating-src.tar.gz.asc
-apache-hertzbeat-1.6.0-incubating-src.tar.gz.sha512
-apache-hertzbeat-1.6.0-incubating-bin.tar.gz
-apache-hertzbeat-1.6.0-incubating-bin.tar.gz.asc
-apache-hertzbeat-1.6.0-incubating-bin.tar.gz.sha512
-apache-hertzbeat-collector-1.6.0-incubating-bin.tar.gz
-apache-hertzbeat-collector-1.6.0-incubating-bin.tar.gz.asc
-apache-hertzbeat-collector-1.6.0-incubating-bin.tar.gz.sha512
+apache-hertzbeat-1.7.3-src.tar.gz
+apache-hertzbeat-1.7.3-src.tar.gz.asc
+apache-hertzbeat-1.7.3-src.tar.gz.sha512
+apache-hertzbeat-1.7.3-bin.tar.gz
+apache-hertzbeat-1.7.3-bin.tar.gz.asc
+apache-hertzbeat-1.7.3-bin.tar.gz.sha512
+apache-hertzbeat-1.7.3-docker-compose.tar.gz
+apache-hertzbeat-1.7.3-docker-compose.tar.gz.asc
+apache-hertzbeat-1.7.3-docker-compose.tar.gz.sha512
+apache-hertzbeat-collector-1.7.3-bin.tar.gz
+apache-hertzbeat-collector-1.7.3-bin.tar.gz.asc
+apache-hertzbeat-collector-1.7.3-bin.tar.gz.sha512
 ```
 
 #### 3.6 Verify signature
@@ -270,28 +274,34 @@ $ cd dist
 # Verify signature
 $ for i in *.tar.gz; do echo $i; gpg --verify $i.asc $i ; done
 
-apache-hertzbeat-1.6.0-incubating-src.tar.gz
+apache-hertzbeat-1.7.3-bin.tar.gz
 gpg: Signature made Tue May  2 12:16:35 2023 CST
 gpg:                using RSA key 85778A4CE4DD04B7E07813ABACFB69E705016886
-gpg: Good signature from "muchunjin (apache key) <muchunjin@apache.org>" [ultimate]
-apache-hertzbeat_2.11-1.6.0-incubating-bin.tar.gz
+gpg: Good signature from "muchunjin (apache key) [muchunjin@apache.org](mailto:muchunjin@apache.org)" [ultimate]
+apache-hertzbeat-1.7.3-docker-compose.tar.gz
 gpg: Signature made Tue May  2 12:16:36 2023 CST
 gpg:                using RSA key 85778A4CE4DD04B7E07813ABACFB69E705016886
-gpg: Good signature from "muchunjin (apache key) <muchunjin@apache.org>" [ultimate]
-apache-hertzbeat_2.12-1.6.0-incubating-bin.tar.gz
+gpg: Good signature from "muchunjin (apache key) [muchunjin@apache.org](mailto:muchunjin@apache.org)" [ultimate]
+apache-hertzbeat-1.7.3-src.tar.gz
 gpg: Signature made Tue May  2 12:16:37 2023 CST
 gpg:                using RSA key 85778A4CE4DD04B7E07813ABACFB69E705016886
-gpg: BAD signature from "muchunjin (apache key) <muchunjin@apache.org>" [ultimate]
+gpg: Good signature from "muchunjin (apache key) [muchunjin@apache.org](mailto:muchunjin@apache.org)" [ultimate]
+apache-hertzbeat-collector-1.7.3-bin.tar.gz
+gpg: Signature made Tue May  2 12:16:37 2023 CST
+gpg:                using RSA key 85778A4CE4DD04B7E07813ABACFB69E705016886
+gpg: Good signature from "muchunjin (apache key) [muchunjin@apache.org](mailto:muchunjin@apache.org)" [ultimate]
 
 # Verify SHA512
 $ for i in *.tar.gz; do echo $i; sha512sum --check $i.sha512; done
 
-apache-hertzbeat-1.6.0-incubating-src.tar.gz
-apache-hertzbeat-1.6.0-incubating-src.tar.gz: OK
-apache-hertzbeat-1.6.0-incubating-bin.tar.gz
-apache-hertzbeat-1.6.0-incubating-bin.tar.gz: OK
-apache-hertzbeat-collector-1.6.0-incubating-bin.tar.gz
-apache-hertzbeat-collector-1.6.0-incubating-bin.tar.gz: OK
+apache-hertzbeat-1.7.3-src.tar.gz
+apache-hertzbeat-1.7.3-src.tar.gz: OK
+apache-hertzbeat-1.7.3-bin.tar.gz
+apache-hertzbeat-1.7.3-bin.tar.gz: OK
+apache-hertzbeat-1.7.3-docker-compose.tar.gz
+apache-hertzbeat-1.7.3-docker-compose.tar.gz: OK
+apache-hertzbeat-collector-1.7.3-bin.tar.gz
+apache-hertzbeat-collector-1.7.3-bin.tar.gz: OK
 ```
 
 #### 3.7 Publish the dev directory of the Apache SVN material package
@@ -299,21 +309,21 @@ apache-hertzbeat-collector-1.6.0-incubating-bin.tar.gz: OK
 - Clone the dev directory
 
 ```shell
-# Check out the dev directory of the Apache SVN to the svn/dev directory under dist in the root directory of the Apache HertzBeat project
-svn co https://dist.apache.org/repos/dist/dev/incubator/hertzbeat svn/dev
+# Check out the dev directory of the Apache SVN to the svn/dev directory under dist in the root directory of the Apache HertzBeat™ project
+svn co https://dist.apache.org/repos/dist/dev/hertzbeat svn/dev
 
-svn co --depth empty https://dist.apache.org/repos/dist/dev/incubator/hertzbeat
+svn co --depth empty https://dist.apache.org/repos/dist/dev/hertzbeat
 ```
 
 - Copy the material package to the dev directory
 
-Create a version number directory and name it in the form of ${release_version}-${RC_version}. RC_version starts from 1, that is, the candidate version starts from RC1. During the release process, there is a problem that causes the vote to fail.  
-If it needs to be corrected, it needs to iterate the RC version , the RC version number needs to be +1. For example: Vote for version 1.6.0-RC1. If the vote passes without any problems, the RC1 version material will be released as the final version material.  
-If there is a problem (when the hertzbeat/incubator community votes, the voters will strictly check various release requirements and compliance issues) and need to be corrected, then re-initiate the vote after the correction, and the candidate version for the next vote is 1.6.0- RC2.
+Create a version number directory and name it in the form of `release_version`-`RC_version`. RC_version starts from 1, that is, the candidate version starts from RC1. During the release process, there is a problem that causes the vote to fail.
+If it needs to be corrected, it needs to iterate the RC version , the RC version number needs to be +1. For example: Vote for version 1.7.3-RC1. If the vote passes without any problems, the RC1 version material will be released as the final version material.
+If there is a problem (when the hertzbeat/incubator community votes, the voters will strictly check various release requirements and compliance issues) and need to be corrected, then re-initiate the vote after the correction, and the candidate version for the next vote is 1.7.3- RC2.
 
 ```shell
-mkdir -p svn/dev/1.6.0-RC1
-cp -f dist/* svn/dev/1.6.0-RC1
+mkdir -p svn/dev/1.7.3-RC1
+cp -f dist/* svn/dev/1.7.3-RC1
 ```
 
 - Commit to SVN
@@ -325,17 +335,17 @@ cd svn/dev
 svn status
 
 # 2. add to svn
-svn add 1.6.0-RC1
+svn add 1.7.3-RC1
 
 svn status
 
 # 3. Submit to svn remote server
-svn commit -m "release for HertzBeat 1.6.0"
+svn commit -m "release for HertzBeat 1.7.3"
 ```
 
 - Check Apache SVN Commit Results
 
-> Visit the address <https://dist.apache.org/repos/dist/dev/incubator/hertzbeat/1.6.0-RC1/> in the browser, check if existed the new material package
+> Visit the address [https://dist.apache.org/repos/dist/dev/hertzbeat/](https://dist.apache.org/repos/dist/dev/hertzbeat/) in the browser, check if existed the new material package
 
 ## 4. Enter the community voting stage
 
@@ -343,28 +353,28 @@ svn commit -m "release for HertzBeat 1.6.0"
 
 Send a voting email in the community requires at least three `+1` and no `-1`.
 
-> `Send to`: <dev@hertzbeat.apache.org> <br />
-> `Title`: [VOTE] Release Apache HertzBeat (incubating) 1.6.0 rc1 <br />
+> `Send to`: [dev@hertzbeat.apache.org](mailto:dev@hertzbeat.apache.org) <br />
+> `Title`: [VOTE] Release Apache HertzBeat™ 1.7.3 rc1 <br />
 > `Body`:
 
 ```text
 Hello HertzBeat Community:
 
-This is a call for vote to release Apache HertzBeat (incubating) version release-1.6.0-RC1.
+This is a call for vote to release Apache HertzBeat™ version release-1.7.3-RC1.
 
-Apache HertzBeat - a real-time monitoring system with agentless, performance cluster, prometheus-compatible, custom monitoring and status page building capabilities.
+Apache HertzBeat™ - A real-time observability system with agentless, performance cluster, prometheus-compatible, custom monitoring and status page building capabilities.
 
 Release notes:
-https://github.com/apache/hertzbeat/releases/tag/v1.6.0-rc1
+https://github.com/apache/hertzbeat/releases/tag/v1.7.3-rc1
 
 The release candidates:
-https://dist.apache.org/repos/dist/dev/incubator/hertzbeat/1.6.0-RC1/
+https://dist.apache.org/repos/dist/dev/hertzbeat/1.7.3-RC1/
 
 Git tag for the release:
-https://github.com/apache/hertzbeat/releases/tag/v1.6.0-rc1
+https://github.com/apache/hertzbeat/releases/tag/v1.7.3-rc1
 
 The artifacts signed with PGP key [33545C76], corresponding to [muchunjin@apache.org], that can be found in keys file:
-https://downloads.apache.org/incubator/hertzbeat/KEYS
+https://downloads.apache.org/hertzbeat/KEYS
 
 The vote will be open for at least 72 hours or until the necessary number of votes are reached.
 
@@ -385,9 +395,6 @@ release.
 [ ] No compiled archives bundled in source archive.
 [ ] Can compile from source.
 
-More detail checklist please refer:
-https://cwiki.apache.org/confluence/display/INCUBATOR/Incubator+Release+Checklist
-
 Steps to validate the release，Please refer to:
 https://hertzbeat.apache.org/docs/community/how_to_verify_release
 
@@ -399,14 +406,14 @@ Thanks!
 
 After 72 hours, the voting results will be counted, and the voting result email will be sent, as follows.
 
-> `Send to`: <dev@hertzbeat.apache.org> <br />
-> `Title`: [RESULT]\[VOTE\] Release Apache HertzBeat (incubating) 1.6.0-rc1 <br />
+> `Send to`: [dev@hertzbeat.apache.org](mailto:dev@hertzbeat.apache.org) <br />
+> `Title`: [RESULT]\[VOTE\] Release Apache HertzBeat™ 1.7.3-rc1 <br />
 > `Body`:
 
 ```text
 Dear HertzBeat community,
 
-Thanks for your review and vote for "Release Apache HertzBeat (incubating) 1.6.0-rc1"
+Thanks for your review and vote for "Release Apache HertzBeat™ 1.7.3-rc1"
 I'm happy to announce the vote has passed:
 ---
 4 binding +1, from:
@@ -428,129 +435,28 @@ Best,
 ChunJin Mu
 ```
 
-One item of the email content is `Vote thread`, and the link is obtained here: <https://lists.apache.org/list.html?dev@hertzbeat.apache.org>
+One item of the email content is `Vote thread`, and the link is obtained here: [https://lists.apache.org/list.html?dev@hertzbeat.apache.org](https://lists.apache.org/list.html?dev@hertzbeat.apache.org)
 
-#### 3.2 Send Incubator Community voting mail
+## 4. Complete the final publishing steps
 
-Send a voting email in the incubator community requires at least three `+1` and no `-1`.
-
-> `Send to`: <general@incubator.apache.org> <br />
-> `cc`: <dev@hertzbeat.apache.org>、<private@hertzbeat.apache.org> <br />
-> `Title`: [VOTE] Release Apache HertzBeat (incubating) 1.6.0-rc1 <br />
-> `Body`:
-
-```text
-Hello Incubator Community:
-
-This is a call for a vote to release Apache HertzBeat (incubating) version 1.6.0-RC1.
-The Apache HertzBeat community has voted on and approved a proposal to release Apache HertzBeat (incubating) version 1.6.0-RC1.
-We now kindly request the Incubator PMC members review and vote on this incubator release.
-Apache HertzBeat, a real-time monitoring system with agentless, performance cluster, prometheus-compatible, custom monitoring and status page building capabilities.
-
-HertzBeat community vote thread:
-https://lists.apache.org/thread/t01b2lbtqzyt7j4dsbdp5qjc3gngjsdq
-
-Vote result thread:
-https://lists.apache.org/thread/t5z58mvrs1drgzfyc48c9lhmd8skswn7
-
-The release candidate:
-https://dist.apache.org/repos/dist/dev/incubator/hertzbeat/1.6.0-RC1/
-
-Git tag for the release:
-https://github.com/apache/hertzbeat/releases/tag/v1.6.0-rc1
-
-The artifacts signed with PGP key [33545C76], corresponding to [muchunjin@apache.org], that can be found in keys file:
-https://downloads.apache.org/incubator/hertzbeat/KEYS
-
-The vote will be open for at least 72 hours or until the necessary number of votes are reached.
-
-Please vote accordingly:
-[ ] +1 approve
-[ ] +0 no opinion
-[ ] -1 disapprove with the reason
-
-More detailed checklist please refer:
-• https://cwiki.apache.org/confluence/display/INCUBATOR/Incubator+Release+Checklist
-
-Steps to validate the release， Please refer to:
-• https://www.apache.org/info/verification.html
-• https://hertzbeat.apache.org/docs/community/how_to_verify_release
----
-How to Build:
-https://hertzbeat.apache.org/docs/community/development/#build-hertzbeat-binary-package
----
-Thanks,
-
-On behalf of Apache HertzBeat (incubating) community
----
-Best,
-ChunJin Mu
-```
-
-If there is no -1 after 72 hours, reply to the email as follows
-
-> `Send to`: <general@incubator.apache.org> <br />
-> `Body`:
-
-```text
-Thanks everyone for review and vote, 72H passed. I'll announce the vote result soon.
-
-Best,
-Chunjin Mu
-```
-
-Then the voting results will be counted, and the voting result email will be sent, as follows.
-
-> `Send to`: <general@incubator.apache.org> <br />
-> `Title`: [RESULT]\[VOTE\] Release Apache HertzBeat (incubating) 1.6.0-rc1 <br />
-> `Body`:
-
-```text
-Hi Incubator Community,
-
-The vote to release Apache HertzBeat (incubating) 1.6.0-rc4 has passed with 3 +1 binding and no +0 or -1 votes.
-
-3 binding votes, no +0 or -1 votes.
-
-+3 (binding) +1, from:
-- xxx
-
-no 0 or -1 votes.
-
-Vote thread:
-
-https://lists.apache.org/thread/m1kyn4l30y55p6q39m0ys5djvdd73h0f
-
-Thanks everyone for your feedback and help with HertzBeat apache release. The HertzBeat team will take the steps to complete this release and will announce it soon.
-
-Best,
-ChunJin Mu
-```
-
-One item of the email content is `Vote thread`, and the link is obtained here: <https://lists.apache.org/list.html?general@incubator.apache.org>
-
-Wait a day to see if the tutor has any other comments, if not, send the following announcement email
-
-## 5. Complete the final publishing steps
-
-### 5.1 Migrating source and binary packages
+### 4.1 Migrating source and binary packages
 
 ```shell
-svn mv https://dist.apache.org/repos/dist/dev/incubator/hertzbeat/1.6.0-RC1 https://dist.apache.org/repos/dist/release/incubator/hertzbeat/1.6.0  -m "transfer packages for 1.6.0-RC1"
+svn mv https://dist.apache.org/repos/dist/dev/hertzbeat/1.7.3-RC1 https://dist.apache.org/repos/dist/release/hertzbeat/1.7.3  -m "transfer packages for 1.7.3-RC1"
 ```
 
 #### 4.2 Add the new version download address to the official website
 
-<https://github.com/apache/hertzbeat/blob/master/home/docs/download.md>
-<https://github.com/apache/hertzbeat/blob/master/home/i18n/zh-cn/docusaurus-plugin-content-docs/current/download.md>
+[https://github.com/apache/hertzbeat/blob/master/home/docs/download.md](https://github.com/apache/hertzbeat/blob/master/home/docs/download.md)
+[https://github.com/apache/hertzbeat/blob/master/home/i18n/zh-cn/docusaurus-plugin-content-docs/current/download.md](https://github.com/apache/hertzbeat/blob/master/home/i18n/zh-cn/docusaurus-plugin-content-docs/current/download.md)
 
-Open the official website address <https://hertzbeat.apache.org/docs/download/> to see if there is a new version of the download
+Open the official website address [https://hertzbeat.apache.org/docs/download/](https://hertzbeat.apache.org/docs/download/) to see if there is a new version of the download
 
 > It should be noted that the download link may take effect after an hour, so please pay attention to it.
 
 #### 4.3 Generate a release on github
 
-Update pre-release to create a tag named v1.6.0 based on the release-1.6.0-rc1 branch, and set this tag to latest release.
+Update pre-release to create a tag named v1.7.3 based on the release-1.7.3-rc1 branch, and set this tag to latest release.
 
 :::tip
 You can modify it on the original RC Release without creating a new Release.
@@ -561,7 +467,7 @@ Then enter Release Title and Describe
 - Release Title:
 
 ```text
-v1.6.0
+v1.7.3
 ```
 
 - Describe:
@@ -573,37 +479,37 @@ release note: xxx
 
 Then click the `Publish release` button.
 
-The rename the release-1.6.0-rc1 branch to release-1.6.0.
+The rename the release-1.7.3-rc1 branch to release-1.7.3.
 
 #### 4.5 Send new version announcement email
 
-> `Send to`: <general@incubator.apache.org> <br />
-> `cc`: <dev@hertzbeat.apache.org> <br />
-> `Title`: [ANNOUNCE] Apache HertzBeat (incubating) 1.6.0 released <br />
+> `Send to`: [announce@apache.org](mailto:announce@apache.org) <br />
+> `cc`: [dev@hertzbeat.apache.org](mailto:dev@hertzbeat.apache.org) <br />
+> `Title`: [ANNOUNCE] Apache HertzBeat™ 1.7.3 released <br />
 > `Body`:
 
 ```text
 Hi Community,
 
-We are glad to announce the release of Apache HertzBeat (incubating) 1.6.0.
-Thanks again for your help. 
+We are glad to announce the release of Apache HertzBeat™ 1.7.3.
+Thanks again for your help.
 
-Apache HertzBeat (https://hertzbeat.apache.org/) - a real-time monitoring system with agentless, performance cluster, prometheus-compatible, custom monitoring and status page building capabilities.
+Apache HertzBeat™ (https://hertzbeat.apache.org/) - A real-time observability system with agentless, performance cluster, prometheus-compatible, custom monitoring and status page building capabilities.
 
-Download Link: 
+Download Link:
 https://hertzbeat.apache.org/docs/download/
 
-Release Note: 
-https://github.com/apache/hertzbeat/releases/tag/v1.6.0
+Release Note:
+https://github.com/apache/hertzbeat/releases/tag/v1.7.3
 
-Website: 
+Website:
 https://hertzbeat.apache.org/
 
 HertzBeat Resources:
 - Issue: https://github.com/apache/hertzbeat/issues
 - Mailing list: dev@hertzbeat.apache.org
 ---
-Apache HertzBeat Team
+Apache HertzBeat™ Team
 ---
 Best,
 ChunJin Mu

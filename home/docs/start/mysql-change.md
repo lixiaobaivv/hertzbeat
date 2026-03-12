@@ -4,9 +4,18 @@ title: Use MYSQL Replace H2 Database to Store Metadata(Optional)
 sidebar_label: Meta Store MYSQL
 ---
 
-MYSQL is a reliable relational database. In addition to default built-in H2 database, Apache HertzBeat (incubating) allow you to use MYSQL to store structured relational data such as monitoring information, alarm information and configuration information.
+MYSQL is a reliable relational database. In addition to default built-in H2 database, Apache HertzBeat™ allow you to use MYSQL to store structured relational data such as monitoring information, alarm information and configuration information.
 
-> If you have the MYSQL environment, can be directly to database creation step.
+> If you already have a MySQL environment and the MySQL version meets the requirements, you can skip directly to the database creation step.
+
+### Supported MySQL Versions
+
+Please ensure you are using a supported MySQL version. HertzBeat only supports MySQL 5.7+ or 8 versions. You can check the MySQL version with the following command:
+
+```shell
+$ mysql --version
+mysql  Ver 8.0.25 for Linux on x86_64 (MySQL Community Server - GPL)
+```
 
 ### Install MYSQL via Docker
 
@@ -44,7 +53,7 @@ MYSQL is a reliable relational database. In addition to default built-in H2 data
 
 ### Add MYSQL jdbc driver jar
 
-- Download the MYSQL jdbc driver jar package, such as mysql-connector-java-8.0.25.jar. <https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-8.0.25.zip>
+- Download the MYSQL jdbc driver jar package, such as mysql-connector-java-8.0.25.jar. [https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-8.0.25.zip](https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-8.0.25.zip)
 - Copy the jar package to the `hertzbeat/ext-lib` directory.
 
 ### Modify hertzbeat's configuration file application.yml and switch data source
@@ -68,12 +77,13 @@ spring:
 
   jpa:
     show-sql: false
-    database-platform: org.eclipse.persistence.platform.database.MySQLPlatform
     database: h2
+    hibernate:
+      ddl-auto: update
     properties:
-      eclipselink:
-        logging:
-          level: SEVERE
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: true
 ```
 
 Specific replacement parameters are as follows and you need to configure account according to the mysql environment:
@@ -89,16 +99,17 @@ spring:
       max-lifetime: 120000
   jpa:
     show-sql: false
-    database-platform: org.eclipse.persistence.platform.database.MySQLPlatform
     database: mysql
+    hibernate:
+      ddl-auto: update
     properties:
-      eclipselink:
-        logging:
-          level: SEVERE
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
 ```
 
 - It is recommended to set the host field in the MySQL URL to the public IP address when using Hertzbeat in docker.
 
-> Note: The above applies to the method of downloading and installing the package. For local data source switching, simply complete the [Database creation](./mysql-change#database-creation) and modify the configuration in `hertzbeat-manager/src/main/resources/application.yml`.
+> Note: The above applies to the method of downloading and installing the package. For local data source switching, simply complete the [Database creation](./mysql-change#database-creation) and modify the configuration in `hertzbeat-startup/src/main/resources/application.yml`.
 
-**Start HertzBeat  visit <http://ip:1157/> on the browser  You can use HertzBeat monitoring alarm, default account and password are admin/hertzbeat**
+**Start HertzBeat  visit [http://ip:1157/](http://ip:1157/) on the browser  You can use HertzBeat monitoring alarm, default account and password are admin/hertzbeat**

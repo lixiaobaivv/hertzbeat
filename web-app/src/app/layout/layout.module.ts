@@ -4,7 +4,7 @@ import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { GlobalFooterModule } from '@delon/abc/global-footer';
-import { AlainThemeModule } from '@delon/theme';
+import { AlainThemeModule, I18nPipe } from '@delon/theme';
 import { LayoutDefaultModule } from '@delon/theme/layout-default';
 import { SettingDrawerModule } from '@delon/theme/setting-drawer';
 import { ThemeBtnModule } from '@delon/theme/theme-btn';
@@ -19,21 +19,21 @@ import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 
 import { LayoutBasicComponent } from './basic/basic.component';
-import { HeaderClearStorageComponent } from './basic/widgets/clear-storage.component';
 import { HeaderFullScreenComponent } from './basic/widgets/fullscreen.component';
 import { HeaderI18nComponent } from './basic/widgets/i18n.component';
-import { HeaderSearchComponent } from './basic/widgets/search.component';
+import { HeaderAiChatComponent } from './basic/widgets/chat-input.component';
 import { HeaderUserComponent } from './basic/widgets/user.component';
 import { HeaderNotifyComponent } from './basic/widgets/notify.component';
 import { LayoutBlankComponent } from './blank/blank.component';
+import { SettingDrawerI18nDirective } from './basic/directives/setting-drawer-i18n.directive';
 
 const COMPONENTS = [LayoutBasicComponent, LayoutBlankComponent, HeaderI18nComponent];
+const DIRECTIVES = [SettingDrawerI18nDirective];
 
 const HEADER_COMPONENTS = [
-  HeaderSearchComponent,
+  HeaderAiChatComponent,
   HeaderFullScreenComponent,
   HeaderI18nComponent,
-  HeaderClearStorageComponent,
   HeaderUserComponent,
   HeaderNotifyComponent
 ];
@@ -46,6 +46,7 @@ import { NzDividerModule } from 'ng-zorro-antd/divider';
 import { NzListComponent, NzListItemActionComponent, NzListItemComponent, NzListItemMetaComponent } from 'ng-zorro-antd/list';
 import { NzStringTemplateOutletDirective } from 'ng-zorro-antd/core/outlet';
 import { NzTooltipDirective } from 'ng-zorro-antd/tooltip';
+import { NzCheckboxComponent } from 'ng-zorro-antd/checkbox';
 const PASSPORT = [LayoutPassportComponent];
 
 @NgModule({
@@ -76,9 +77,11 @@ const PASSPORT = [LayoutPassportComponent];
     NzListItemMetaComponent,
     NzStringTemplateOutletDirective,
     NzListItemActionComponent,
-    NzTooltipDirective
+    NzTooltipDirective,
+    NzCheckboxComponent,
+    I18nPipe
   ],
-  declarations: [...COMPONENTS, ...HEADER_COMPONENTS, ...PASSPORT],
+  declarations: [...COMPONENTS, ...HEADER_COMPONENTS, ...PASSPORT, ...DIRECTIVES],
   exports: [...COMPONENTS, ...PASSPORT]
 })
 export class LayoutModule {}

@@ -41,7 +41,7 @@ limitations under the License.
 
 - 💬**Suggestion**: You can also make some suggestions to the project or community to promote the healthy development of the community;
 
-More see [Contribution Types](https://allcontributors.org/docs/en/emoji-key)
+More see [Contribution Types](https://allcontributors.org/emoji-key)
 
 Even small corrections to typos are very welcome :)
 
@@ -52,27 +52,25 @@ Even small corrections to typos are very welcome :)
 
 #### Backend start
 
-1. Requires `maven3+`, `java17` and `lombok` environments
-2. (Optional) Modify the configuration file: `manager/src/main/resources/application.yml`
+1. Requires `maven3+`, `java21` and `lombok` environments
+2. (Optional) Modify the configuration file: `hertzbeat-startup/src/main/resources/application.yml`
 3. Execute under the project root directory: `mvn clean install -DskipTests`
 4. Add VM Options: `--add-opens=java.base/java.nio=org.apache.arrow.memory.core,ALL-UNNAMED`
-5. Start `springboot manager` service: `manager/src/main/java/org/apache/hertzbeat/hertzbeat-manager/Manager.java`
+5. Start `springboot startup` service: `hertzbeat-startup/src/main/java/org/apache/hertzbeat/startup/HertzBeatApplication.java`
 
 #### Frontend start
 
-1. Need `Node Yarn` Environment, Make sure `Node.js >= 18`
+1. Need `Node pnpm` Environment, Make sure `Node.js >= 18`
 
 2. Cd to the `web-app` directory: `cd web-app`
 
-3. Install yarn if not existed `npm install -g yarn`
+3. Install pnpm if not existed `npm install -g pnpm`
 
-4. Install Dependencies: `yarn install` or `yarn install --registry=https://registry.npmmirror.com` in `web-app`
+4. Install Dependencies: `pnpm install` or `pnpm install --registry=https://registry.npmmirror.com` in `web-app`
 
-5. Install angular-cli globally: `yarn global add @angular/cli@15` or `yarn global add @angular/cli@15 --registry=https://registry.npmmirror.com`
+5. After the local backend is started, start the local frontend in the web-app directory: `pnpm start`
 
-6. After the local backend is started, start the local frontend in the web-app directory: `ng serve --open`
-
-7. Browser access to localhost:4200 to start, default account/password is *admin/hertzbeat*
+6. Browser access to localhost:4200 to start, default account/password is *admin/hertzbeat*
 
 ### Find tasks
 
@@ -87,7 +85,7 @@ Of course, if you have a good idea, you can also propose it directly on GitHub D
 2. Then download the code locally with git command:
 
     ```shell
-    git clone git@github.com:${YOUR_USERNAME}/hertzbeat.git #Recommended  
+    git clone git@github.com:`YOUR_USERNAME`/hertzbeat.git #Recommended  
     ```
 
 3. After the download is complete, please refer to the getting started guide or README file of the target repository to initialize the project.
@@ -141,9 +139,35 @@ git checkout master
 git pull upstream master
 ```
 
+### Get Contributor Certificate
+
+After your pr is merged, you can send an email  `dev@hertzbeat.apache.org` to request your Apache HertzBeat™ contributor electronic certificate.
+
+```text
+Title: [Contributor] Request for a Contributor Certificate: <Your Full Name>
+Body:
+Hello,
+I would like to request a Contributor Certificate for my contributions to the Apache HertzBeat™ project.
+
+- Full Name: <Your Full Name> # The Full Name will be printed on the certificate, any name you want.
+- GitHub Username: <Your GitHub Username>
+- Pull Request Links: <List the URLs of the pull requests you have submitted>
+- Email Address: <Your Email Address>
+
+Best regards,
+<Your Name>
+```
+
+You will receive a reply with an electronic certificate within a few working days, and your name will also appear in the list of contributors.
+Attention contributor certificates are electronic, and certificates for you to become a `Committer` or `PMC` are physical.
+
+Certificate Sample:
+
+![cert](/img/docs/hertzbeat-cert.png)
+
 ### HertzBeat Improvement Proposal (HIP)
 
-If you have major new features(e.g., support metrics push gateway, support logs monitoring), you need to write a design document known as a HertzBeat Improvement Proposal (HIP). Before starting to write a HIP, make sure you follow the process [here](https://github.com/apache/hertzbeat/tree/master/hip).
+If you have major new features(e.g., support metrics push gateway, support logs monitoring), you need to write a design document known as a HertzBeat Improvement Proposal (HIP). Before starting to write a HIP, make sure you follow the process [guide](https://github.com/apache/hertzbeat/tree/master/hip).
 
 ### How to become a Committer?
 
@@ -151,23 +175,4 @@ With the above steps, you are a contributor to HertzBeat. Repeat the previous st
 
 ### Join Discussion
 
-[Join the Mailing Lists](https://lists.apache.org/list.html?dev@hertzbeat.apache.org) : Mail to `dev-subscribe@hertzbeat.apache.org` to subscribe mailing lists.
-
-Add WeChat account `ahertzbeat` to pull you into the WeChat group.
-
-## 🥐 Architecture
-
-- **[manager](https://github.com/apache/hertzbeat/tree/master/hertzbeat-manager)** Provide monitoring management, system management basic services.
-
-> Provides monitoring management, monitoring configuration management, system user management, etc.
->
-> - **[collector](https://github.com/apache/hertzbeat/tree/master/hertzbeat-collector)** Provide metrics data collection services.
-> Use common protocols to remotely collect and obtain peer-to-peer metrics data.
-> - **[warehouse](https://github.com/apache/hertzbeat/tree/master/hertzbeat-warehouse)** Provide monitoring data warehousing services.
-> Metrics data management, data query, calculation and statistics.
-> - **[alerter](https://github.com/apache/hertzbeat/tree/master/hertzbeat-alerter)** Provide alert service.
-> Alarm calculation trigger, monitoring status linkage, alarm configuration, and alarm notification.
-> - **[web-app](https://github.com/apache/hertzbeat/tree/master/web-app)** Provide web ui.
-> Angular Web UI.
-
-![hertzBeat](/img/docs/hertzbeat-arch.png)
+[Discussion](contact)

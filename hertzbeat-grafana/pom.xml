@@ -32,16 +32,21 @@
     </properties>
 
     <dependencies>
-        <!-- hertzbeat common -->
+        <!-- hertzbeat base -->
         <dependency>
             <groupId>org.apache.hertzbeat</groupId>
-            <artifactId>hertzbeat-common</artifactId>
+            <artifactId>hertzbeat-base</artifactId>
         </dependency>
         <!-- hertzbeat warehouse -->
         <dependency>
             <groupId>org.apache.hertzbeat</groupId>
             <artifactId>hertzbeat-warehouse</artifactId>
         </dependency>
+      <!-- hertzbeat common-core -->
+      <dependency>
+        <groupId>org.apache.hertzbeat</groupId>
+        <artifactId>hertzbeat-common-core</artifactId>
+      </dependency>
         <!-- jpa -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

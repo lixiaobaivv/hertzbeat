@@ -25,7 +25,7 @@ limitations under the License.
 
 ### 贡献方式
 
-> 在 HertzBeat 社区，贡献方式有很多:
+> 在 Apache HertzBeat™ 社区，贡献方式有很多:
 
 - 💻**代码**：可以帮助社区完成一些任务、编写新的 feature 或者是修复一些 bug；
 
@@ -41,7 +41,7 @@ limitations under the License.
 
 - 💬**建议**：也可以对项目或者社区提出一些建议，促进社区的良性发展；
 
-更多贡献方式参见 [Contribution Types](https://allcontributors.org/docs/en/emoji-key)
+更多贡献方式参见 [Contribution Types](https://allcontributors.org/emoji-key)
 
 即便是小到错别字的修正我们也都非常欢迎 :)
 
@@ -52,31 +52,29 @@ limitations under the License.
 
 #### 后端启动
 
-1. 需要 `maven3+`, `java17` 和 `lombok` 环境
+1. 需要 `maven3+`, `java21` 和 `lombok` 环境
 
-2. (可选)修改配置文件配置信息-`manager/src/main/resources/application.yml`
+2. (可选)修改配置文件配置信息-`hertzbeat-startup/src/main/resources/application.yml`
 
 3. 在项目根目录运行编译: `mvn clean install -DskipTests`
 
 4. 在 `jvm` 加入参数 `--add-opens=java.base/java.nio=org.apache.arrow.memory.core,ALL-UNNAMED`
 
-5. 启动`springboot manager`服务 `manager/src/main/java/org/apache/hertzbeat/hertzbeat-manager/Manager.java`
+5. 启动`springboot startup`服务 `hertzbeat-startup/src/main/java/org/apache/hertzbeat/startup/HertzBeatApplication.java`
 
 #### 前端启动
 
-1. 需要 `nodejs yarn` 环境, 确保 `Node.js >= 18`
+1. 需要 `nodejs pnpm` 环境, 确保 `Node.js >= 18`
 
 2. 进入 `web-app` 目录: `cd web-app`
 
-3. 安装 yarn: `npm install -g yarn`
+3. 安装 pnpm: `npm install -g pnpm`
 
-4. 在前端工程目录 `web-app` 下执行: `yarn install` or `yarn install --registry=https://registry.npmmirror.com` in `web-app`
+4. 在前端工程目录 `web-app` 下执行: `pnpm install` or `pnpm install --registry=https://registry.npmmirror.com` in `web-app`
 
-5. 全局安装 `angular-cli`: `yarn global add @angular/cli@15` or `yarn global add @angular/cli@15 --registry=https://registry.npmmirror.com`
+5. 待本地后端启动后，在 web-app 目录下启动本地前端 `pnpm start`
 
-6. 待本地后端启动后，在 web-app 目录下启动本地前端 `ng serve --open`
-
-7. 浏览器访问 localhost:4200 即可开始，默认账号密码 **admin/hertzbeat**
+6. 浏览器访问 localhost:4200 即可开始，默认账号密码 **admin/hertzbeat**
 
 ### 寻找任务
 
@@ -91,7 +89,7 @@ limitations under the License.
 2. 然后 用 git 命令 将代码下载到本地:
 
     ```shell
-    git clone git@github.com:${YOUR_USERNAME}/hertzbeat.git #Recommended  
+    git clone git@github.com:`YOUR_USERNAME`/hertzbeat.git #Recommended  
     ```
 
 3. 下载完成后，请参考目标仓库的入门指南或者 README 文件对项目进行初始化。
@@ -145,29 +143,36 @@ git checkout master
 git pull upstream master
 ```
 
+### 领取贡献者证书
+
+在您的 PR 被合并后，您可以发送如下内容邮件到 `dev@hertzbeat.apache.org` 来申请领取属于您的 Apache HertzBeat™ 贡献者电子证书。
+
+```text
+Title: [Contributor] Request for a Contributor Certificate: <Your Full Name>
+Body:
+Hello,
+I would like to request a Contributor Certificate for my contributions to the Apache HertzBeat™ project.
+
+- Full Name: <Your Full Name> # The Full Name will be printed on the certificate, any name you want.
+- GitHub Username: <Your GitHub Username>
+- Pull Request Links: <List the URLs of the pull requests you have submitted>
+- Email Address: <Your Email Address>
+
+Best regards,
+<Your Name>
+```
+
+在几个工作日内，您会收到携带电子证书的回复，您的名字也会出现在贡献者列表中。
+注意贡献者的证书是电子的，待您成为 `Committer` 或者 `PMC` 的证书是实体的。
+
+证书样例：
+
+![cert](/img/docs/hertzbeat-cert.png)
+
 ### 如何成为 Committer？
 
 通过上述步骤，您就是 HertzBeat 的贡献者了。重复前面的步骤，在社区中保持活跃，坚持下去，您就能成为 Committer！
 
 ### 加入讨论交流
 
-[Github Discussion](https://github.com/apache/hertzbeat/discussions)
-
-加微信号 `ahertzbeat` 拉您进微信交流群
-
-### 模块
-
-- **[manager](https://github.com/apache/hertzbeat/tree/master/hertzbeat-manager)** 提供监控管理,系统管理基础服务
-
-> 提供对监控的管理，监控应用配置的管理，系统用户租户后台管理等。
->
-> - **[collector](https://github.com/apache/hertzbeat/tree/master/hertzbeat-collector)** 提供监控数据采集服务
-> 使用通用协议远程采集获取对端指标数据。
-> - **[warehouse](https://github.com/apache/hertzbeat/tree/master/hertzbeat-warehouse)** 提供监控数据仓储服务
-> 采集指标结果数据管理，数据落盘，查询，计算统计。
-> - **[alerter](https://github.com/apache/hertzbeat/tree/master/hertzbeat-alerter)** 提供告警服务
-> 告警计算触发，任务状态联动，告警配置，告警通知。
-> - **[web-app](https://github.com/apache/hertzbeat/tree/master/web-app)** 提供可视化控制台页面
-> 监控告警系统可视化控制台前端
-
-![hertzBeat](/img/docs/hertzbeat-arch.png)
+[讨论交流](contact)

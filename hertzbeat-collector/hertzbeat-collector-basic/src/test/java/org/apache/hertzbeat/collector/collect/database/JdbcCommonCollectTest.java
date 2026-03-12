@@ -17,16 +17,20 @@
 
 package org.apache.hertzbeat.collector.collect.database;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
 import org.apache.hertzbeat.collector.dispatch.DispatchConstants;
 import org.apache.hertzbeat.common.entity.job.Metrics;
 import org.apache.hertzbeat.common.entity.job.protocol.JdbcProtocol;
 import org.apache.hertzbeat.common.entity.message.CollectRep;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Test case for {@link JdbcCommonCollect}
@@ -99,28 +103,27 @@ class JdbcCommonCollectTest {
             "dm"
         };
         for (String platform : platforms) {
-            assertDoesNotThrow(() -> {
-                JdbcProtocol jdbc = new JdbcProtocol();
-                jdbc.setPlatform(platform);
-    
-                Metrics metrics = new Metrics();
-                metrics.setJdbc(jdbc);
-    
-                CollectRep.MetricsData.Builder builder = CollectRep.MetricsData.newBuilder();
-                jdbcCommonCollect.collect(builder, metrics);
-            });
-        }
-        // invalid platform
-        assertThrows(IllegalArgumentException.class, () -> {
             JdbcProtocol jdbc = new JdbcProtocol();
-            jdbc.setPlatform("invalid");
+            jdbc.setPlatform(platform);
 
             Metrics metrics = new Metrics();
             metrics.setJdbc(jdbc);
 
             CollectRep.MetricsData.Builder builder = CollectRep.MetricsData.newBuilder();
             jdbcCommonCollect.collect(builder, metrics);
-        });
+            assertNotEquals(builder.getMsg(), "Query Error: Not support database platform: " + platform);
+        }
+        // invalid platform
+        JdbcProtocol jdbc = new JdbcProtocol();
+        jdbc.setPlatform("invalid");
+
+        Metrics metrics = new Metrics();
+        metrics.setJdbc(jdbc);
+
+        CollectRep.MetricsData.Builder builder = CollectRep.MetricsData.newBuilder();
+        jdbcCommonCollect.collect(builder, metrics);
+        assertEquals(builder.getCode(), CollectRep.Code.FAIL);
+        assertEquals(builder.getMsg(), "Query Error: Not support database platform: invalid");
     }
 
     @Test
@@ -128,4 +131,81 @@ class JdbcCommonCollectTest {
         String protocol = jdbcCommonCollect.supportProtocol();
         assertEquals(DispatchConstants.PROTOCOL_JDBC, protocol);
     }
+
+    @Test
+    void testUrlPassThrough() {
+        String[] testUrls = {
+                "jdbc:mysql://localhost:3306/test?allowPublicKeyRetrieval=true&useSSL=false",
+                "jdbc:mysql://localhost:3306/test?usessl=false&verifyServerCertificate=true",
+                "jdbc:mysql://localhost:3306/test?serverTimezone=UTC&autoReconnect=false"
+        };
+        JdbcCommonCollect jdbcCollect = new JdbcCommonCollect();
+        for (String originalUrl : testUrls) {
+            try {
+                JdbcProtocol jdbcProtocol = JdbcProtocol.builder()
+                        .host("localhost")
+                        .port("3306")
+                        .platform("mysql")
+                        .username("root")
+                        .password("root")
+                        .database("test")
+                        .url(originalUrl)
+                        .build();
+                
+                // Use reflection to call constructDatabaseUrl method
+                Method constructMethod = JdbcCommonCollect.class.getDeclaredMethod("constructDatabaseUrl", JdbcProtocol.class, String.class, String.class);
+                constructMethod.setAccessible(true);
+                String processedUrl = (String) constructMethod.invoke(jdbcCollect, jdbcProtocol, "localhost", "3306");
+                // Verify that the processed URL is the same as the original URL
+                assertEquals(originalUrl, processedUrl, 
+                    "URL should be passed through without modification: " + originalUrl);
+            } catch (Exception e) {
+                System.out.println("URL rejected by security validation: " + originalUrl + ", reason: " + e.getMessage());
+            }
+        }
+    }
+
+    @Test
+    void testConstructDatabaseUrlSecurityInterception() {
+        JdbcCommonCollect jdbcCollect = new JdbcCommonCollect();
+        String[] maliciousUrls = {
+                // URL length limit test
+                "jdbc:mysql://localhost:3306/test?" + "a".repeat(2050) + "=value",
+                // url format check
+                "jdbca:mysql://localhost:3306/test?allowLoadLocalInfile=true",
+                // backlist check
+                "jdbc:mysql://localhost:3306/test?allowLoadLocalInfile=true",
+                // universal detection of JDBC injection and deserialization attacks
+                "jdbc:mysql://localhost:3306/test?jndi:ldap://duansg.com/exploit",
+                // universal detection of bypass
+                "jdbc:mysql://localhost:3306/test?param=create\\trigger",
+                // database platform specific bypass detection
+                "jdbc:mysql://localhost:3306/test?allow\\nload\\nlocal\\ninfile=true"
+
+        };
+
+        // Test malicious URLs - should throw exceptions
+        for (String maliciousUrl : maliciousUrls) {
+            JdbcProtocol jdbcProtocol = JdbcProtocol.builder()
+                    .host("localhost")
+                    .port("3306")
+                    .platform("mysql")
+                    .username("root")
+                    .password("root")
+                    .database("test")
+                    .url(maliciousUrl)
+                    .build();
+
+            assertThrows(Exception.class, () -> {
+                try {
+                    Method constructMethod = JdbcCommonCollect.class.getDeclaredMethod("constructDatabaseUrl", JdbcProtocol.class, String.class, String.class);
+                    constructMethod.setAccessible(true);
+                    constructMethod.invoke(jdbcCollect, jdbcProtocol, "localhost", "3306");
+                } catch (InvocationTargetException e) {
+                    throw e.getCause();
+                }
+            }, "Malicious URL should be blocked: " + maliciousUrl);
+        }
+    }
+
 }

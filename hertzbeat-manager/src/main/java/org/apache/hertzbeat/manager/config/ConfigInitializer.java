@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,19 +17,20 @@
 
 package org.apache.hertzbeat.manager.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.usthe.sureness.util.JsonWebTokenUtil;
 import jakarta.annotation.Resource;
+import java.security.SecureRandom;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
-import java.util.Random;
 import java.util.TimeZone;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hertzbeat.common.constants.CommonConstants;
 import org.apache.hertzbeat.common.entity.manager.GeneralConfig;
+import org.apache.hertzbeat.common.util.AesUtil;
+import org.apache.hertzbeat.common.util.JsonUtil;
 import org.apache.hertzbeat.common.util.TimeZoneUtil;
-import org.apache.hertzbeat.manager.dao.GeneralConfigDao;
+import org.apache.hertzbeat.base.dao.GeneralConfigDao;
 import org.apache.hertzbeat.manager.pojo.dto.MuteConfig;
 import org.apache.hertzbeat.manager.pojo.dto.SystemConfig;
 import org.apache.hertzbeat.manager.pojo.dto.SystemSecret;
@@ -55,12 +56,15 @@ public class ConfigInitializer implements SmartLifecycle {
     private boolean running = false;
 
     private static final String DEFAULT_JWT_SECRET = "CyaFv0bwq2Eik0jdrKUtsA6bx3sDJeFV643R "
-            + "LnfKefTjsIfJLBa2YkhEqEGtcHDTNe4CU6+9 "
-            + "8tVt4bisXQ13rbN0oxhUZR73M6EByXIO+SV5 "
-            + "dKhaX0csgOCTlCxq20yhmUea6H6JIpSE2Rwp";
+        + "LnfKefTjsIfJLBa2YkhEqEGtcHDTNe4CU6+9 "
+        + "8tVt4bisXQ13rbN0oxhUZR73M6EByXIO+SV5 "
+        + "dKhaX0csgOCTlCxq20yhmUea6H6JIpSE2Rwp";
 
     @Value("${sureness.jwt.secret:" + DEFAULT_JWT_SECRET + "}")
     private String currentJwtSecret;
+
+    @Value("${common.secret:" + AesUtil.DEFAULT_ENCODE_RULES + "}")
+    private String currentAesSecret;
 
     @Resource
     private SystemGeneralConfigServiceImpl systemGeneralConfigService;
@@ -80,9 +84,6 @@ public class ConfigInitializer implements SmartLifecycle {
     @Resource
     protected GeneralConfigDao generalConfigDao;
 
-    @Resource
-    protected ObjectMapper objectMapper;
-
     @SneakyThrows
     public void initConfig() {
         // for system config
@@ -92,48 +93,57 @@ public class ConfigInitializer implements SmartLifecycle {
 
             final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSX");
             simpleDateFormat.setTimeZone(TimeZone.getDefault());
-            objectMapper.setTimeZone(TimeZone.getDefault())
-                    .setDateFormat(simpleDateFormat);
         } else {
             // init system config data
             systemConfig = SystemConfig.builder().timeZoneId(TimeZone.getDefault().getID()).theme("default")
-                                   .locale(Locale.getDefault().getLanguage() + CommonConstants.LOCALE_SEPARATOR
-                                                   + Locale.getDefault().getCountry())
-                                   .build();
-            String contentJson = objectMapper.writeValueAsString(systemConfig);
+                .locale(Locale.getDefault().getLanguage() + CommonConstants.LOCALE_SEPARATOR
+                    + Locale.getDefault().getCountry())
+                .build();
+            String contentJson = JsonUtil.toJson(systemConfig);
             GeneralConfig generalConfig2Save = GeneralConfig.builder()
-                                                       .type(systemGeneralConfigService.type())
-                                                       .content(contentJson)
-                                                       .build();
+                .type(systemGeneralConfigService.type())
+                .content(contentJson)
+                .build();
             generalConfigDao.save(generalConfig2Save);
         }
         // for template config, flush the template config in db to memory
         TemplateConfig templateConfig = templateConfigService.getConfig();
         appService.updateCustomTemplateConfig(templateConfig);
-        // for system secrets
+        // for system jwt secrets and aes secret
+        boolean needUpdate = false;
+        SystemSecret.SystemSecretBuilder systemSecretBuilder = SystemSecret.builder();
+        SystemSecret systemSecret = systemSecretService.getConfig();
+        if (systemSecret != null) {
+            systemSecretBuilder.jwtSecret(systemSecret.getJwtSecret());
+            systemSecretBuilder.aesSecret(systemSecret.getAesSecret());
+        }
         if (DEFAULT_JWT_SECRET.equals(currentJwtSecret)) {
             // use the random jwt secret
-            SystemSecret systemSecret = systemSecretService.getConfig();
             if (systemSecret == null || StringUtils.isBlank(systemSecret.getJwtSecret())) {
-                char[] chars = DEFAULT_JWT_SECRET.toCharArray();
-                Random rand = new Random();
-                for (int i = 0; i < chars.length; i++) {
-                    int index = rand.nextInt(chars.length);
-                    char temp = chars[i];
-                    chars[i] = chars[index];
-                    chars[index] = temp;
-                }
-                currentJwtSecret = new String(chars);
-                systemSecret = SystemSecret.builder().jwtSecret(currentJwtSecret).build();
-                systemSecretService.saveConfig(systemSecret);
+                currentJwtSecret = randomizeSecret(DEFAULT_JWT_SECRET);
+                systemSecretBuilder.jwtSecret(currentJwtSecret);
+                needUpdate = true;
             } else {
                 currentJwtSecret = systemSecret.getJwtSecret();
             }
         }
-        // else use the user custom jwt secret
-        // set the jwt secret token in util
+        // else use the user custom jwt secret, set the jwt secret token in util
         JsonWebTokenUtil.setDefaultSecretKey(currentJwtSecret);
-
+        // Aes secret config
+        if (AesUtil.DEFAULT_ENCODE_RULES.equals(currentAesSecret)) {
+            // use the random aes secret
+            if (systemSecret == null || StringUtils.isBlank(systemSecret.getAesSecret())) {
+                currentAesSecret = randomizeSecret(AesUtil.DEFAULT_ENCODE_RULES);
+                systemSecretBuilder.aesSecret(currentAesSecret);
+                needUpdate = true;
+            } else {
+                currentAesSecret = systemSecret.getAesSecret();
+            }
+        }
+        AesUtil.setDefaultSecretKey(currentAesSecret);
+        if (needUpdate) {
+            systemSecretService.saveConfig(systemSecretBuilder.build());
+        }
         // init web-app mute config
         MuteConfig muteConfig = muteGeneralConfigService.getConfig();
         if (muteConfig == null) {
@@ -161,5 +171,19 @@ public class ConfigInitializer implements SmartLifecycle {
     @Override
     public int getPhase() {
         return Ordered.HIGHEST_PRECEDENCE;
+    }
+
+    private String randomizeSecret(String secret) {
+        SecureRandom random = new SecureRandom();
+        StringBuilder sb = new StringBuilder(secret.length());
+        for (int i = 0; i < secret.length(); i++) {
+            char ch;
+            do {
+                int codePoint = random.nextInt('z' - '0' + 1) + '0';
+                ch = (char) codePoint;
+            } while (!Character.isLetterOrDigit(ch));
+            sb.append(ch);
+        }
+        return sb.toString();
     }
 }

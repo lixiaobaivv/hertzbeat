@@ -23,16 +23,15 @@ import { I18NService } from '@core';
 import { ALAIN_I18N_TOKEN } from '@delon/theme';
 import { NzModalService } from 'ng-zorro-antd/modal';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
+import { NzTableQueryParams } from 'ng-zorro-antd/table';
 import { switchMap } from 'rxjs';
 
 import { Message } from '../../../pojo/Message';
-import { TagItem } from '../../../pojo/NoticeRule';
 import { StatusPageComponent } from '../../../pojo/StatusPageComponent';
 import { StatusPageIncident } from '../../../pojo/StatusPageIncident';
 import { StatusPageIncidentContent } from '../../../pojo/StatusPageIncidentContent';
 import { StatusPageOrg } from '../../../pojo/StatusPageOrg';
 import { StatusPageService } from '../../../service/status-page.service';
-import { TagService } from '../../../service/tag.service';
 
 @Component({
   selector: 'app-status',
@@ -44,7 +43,6 @@ export class StatusComponent implements OnInit {
     private notifySvc: NzNotificationService,
     private modal: NzModalService,
     private statusPageService: StatusPageService,
-    private tagService: TagService,
     @Inject(ALAIN_I18N_TOKEN) private i18nSvc: I18NService
   ) {}
 
@@ -70,8 +68,9 @@ export class StatusComponent implements OnInit {
   isIncidentModalAdd: boolean = true;
 
   search!: string;
-  tagsOption: any[] = [];
-  matchTag: string = '';
+  pageIndex: number = 1;
+  pageSize: number = 8;
+  total: number = 0;
 
   ngOnInit(): void {
     this.loadStatusPageConfig();
@@ -104,12 +103,31 @@ export class StatusComponent implements OnInit {
     );
   }
 
+  onTablePageChange(params: NzTableQueryParams) {
+    const { pageSize, pageIndex } = params;
+    this.pageIndex = pageIndex;
+    this.pageSize = pageSize;
+    this.loadIncidenceInfo();
+  }
+
+  onPageIndexChange(pageIndex: number) {
+    this.pageIndex = pageIndex;
+    this.loadIncidenceInfo();
+  }
+
   loadIncidenceInfo() {
     this.incidentLoading = true;
-    let incidenceLoad$ = this.statusPageService.getStatusPageIncidents().subscribe(
+    let trimSearch = '';
+    if (this.search && this.search.trim() !== '') {
+      trimSearch = this.search.trim();
+    }
+    let incidenceLoad$ = this.statusPageService.getStatusPageIncidents(trimSearch, this.pageIndex - 1, this.pageSize).subscribe(
       message => {
         if (message.code === 0) {
-          this.statusIncidences = message.data;
+          let page = message.data;
+          this.pageIndex = page.number + 1;
+          this.total = page.totalElements;
+          this.statusIncidences = page.content;
         } else {
           console.log(message.msg);
         }
@@ -182,7 +200,6 @@ export class StatusComponent implements OnInit {
   onNewStatusComponent() {
     this.isComponentModalAdd = true;
     this.currentStatusComponent = new StatusPageComponent();
-    this.matchTag = '';
     this.currentComponentVisible = true;
   }
 
@@ -220,13 +237,6 @@ export class StatusComponent implements OnInit {
   onEditOneComponent(data: StatusPageComponent) {
     this.isComponentModalAdd = false;
     this.currentStatusComponent = { ...data };
-    if (this.currentStatusComponent.tag != undefined) {
-      this.matchTag = this.sliceTagName(this.currentStatusComponent.tag);
-      this.tagsOption.push({
-        value: this.matchTag,
-        label: this.matchTag
-      });
-    }
     this.currentComponentVisible = true;
   }
 
@@ -303,17 +313,6 @@ export class StatusComponent implements OnInit {
         }
       });
       return;
-    }
-    if (this.matchTag != undefined && this.matchTag.trim() != '') {
-      let tmp: string[] = this.matchTag.split(':');
-      let tagItem = new TagItem();
-      if (tmp.length == 1) {
-        tagItem.name = tmp[0];
-      } else if (tmp.length == 2) {
-        tagItem.name = tmp[0];
-        tagItem.value = tmp[1];
-      }
-      this.currentStatusComponent.tag = tagItem;
     }
     if (this.statusOrg.id == undefined) {
       this.notifySvc.warning(this.i18nSvc.fanyi('status.component.notify.need-org'), '');
@@ -479,36 +478,6 @@ export class StatusComponent implements OnInit {
     });
   }
 
-  loadTagsOption() {
-    let tagsInit$ = this.tagService.loadTags(undefined, undefined, 0, 1000).subscribe(
-      message => {
-        if (message.code === 0) {
-          let page = message.data;
-          this.tagsOption = [];
-          if (page.content != undefined) {
-            page.content.forEach(item => {
-              let tag = `${item.name}`;
-              if (item.tagValue != undefined) {
-                tag = `${tag}:${item.tagValue}`;
-              }
-              this.tagsOption.push({
-                value: tag,
-                label: tag
-              });
-            });
-          }
-        } else {
-          console.warn(message.msg);
-        }
-        tagsInit$.unsubscribe();
-      },
-      error => {
-        tagsInit$.unsubscribe();
-        console.error(error.msg);
-      }
-    );
-  }
-
   getLatestIncidentContentMsg(incidents: StatusPageIncidentContent[]): string {
     if (incidents == undefined || incidents.length == 0) {
       return '';
@@ -533,14 +502,19 @@ export class StatusComponent implements OnInit {
     }
   }
 
-  sliceTagName(tag: TagItem): string {
-    if (tag == undefined) {
-      return '';
+  getLabelColor(key: string): string {
+    const colors = ['blue', 'green', 'orange', 'purple', 'cyan'];
+    const index = Math.abs(this.hashString(key)) % colors.length;
+    return colors[index];
+  }
+
+  private hashString(str: string): number {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = (hash << 5) - hash + char;
+      hash = hash & hash;
     }
-    if (tag.value != undefined && tag.value.trim() != '') {
-      return `${tag.name}:${tag.value}`;
-    } else {
-      return tag.name;
-    }
+    return hash;
   }
 }

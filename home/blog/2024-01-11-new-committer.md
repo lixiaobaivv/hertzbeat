@@ -3,7 +3,6 @@ title: Welcome to HertzBeat Community Committer!
 author: tom  
 author_title: tom   
 author_url: https://github.com/tomsun28  
-author_image_url: https://avatars.githubusercontent.com/u/24788200?s=400&v=4  
 tags: [opensource, practice]
 keywords: [open source monitoring system, alerting system]
 ---
@@ -129,8 +128,8 @@ Thanks to the authors of hertzbeat for the documentation and help. Thanks to my 
 
 > ``HertzBeat``s powerful customization, multi-type support, high performance, easy to extend, low coupling, hope to help developers and teams quickly build their own monitoring system.
 
-**Github: <https://github.com/apache/hertzbeat>**
+**Github: [https://github.com/apache/hertzbeat](https://github.com/apache/hertzbeat)**
 
-**Gitee: <https://gitee.com/hertzbeat/hertzbeat>**
+**Gitee: [https://gitee.com/hertzbeat/hertzbeat](https://gitee.com/hertzbeat/hertzbeat)**
 
 Welcome more partners to participate in HertzBeat's open source collaboration, no matter a typo or punctuation we are very welcome, we learn together to make progress, the goal is to do a world-class open source software.

@@ -17,14 +17,16 @@
 
 package org.apache.hertzbeat.manager.service;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
-import java.util.Collections;
+import org.apache.hertzbeat.common.entity.job.Job;
+import org.apache.hertzbeat.common.entity.job.Metrics;
+import org.apache.hertzbeat.common.entity.job.RuntimeParamDefine;
+import org.apache.hertzbeat.common.entity.manager.Define;
 import org.apache.hertzbeat.common.entity.manager.Monitor;
+import org.apache.hertzbeat.manager.dao.DefineDao;
 import org.apache.hertzbeat.manager.dao.MonitorDao;
+import org.apache.hertzbeat.manager.pojo.dto.ObjectStoreConfigChangeEvent;
+import org.apache.hertzbeat.manager.pojo.dto.ObjectStoreDTO;
+import org.apache.hertzbeat.manager.pojo.dto.ParamDefineInfo;
 import org.apache.hertzbeat.manager.service.impl.AppServiceImpl;
 import org.apache.hertzbeat.manager.service.impl.ObjectStoreConfigServiceImpl;
 import org.apache.hertzbeat.warehouse.service.WarehouseService;
@@ -34,6 +36,21 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
 
 /**
  * Test case for {@link AppService}
@@ -48,6 +65,9 @@ class AppServiceTest {
     private MonitorDao monitorDao;
 
     @Mock
+    private DefineDao defineDao;
+
+    @Mock
     private WarehouseService warehouseService;
 
     @Mock
@@ -55,7 +75,8 @@ class AppServiceTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        appService.run();
+        when(defineDao.findAll()).thenReturn(new ArrayList<>());
+        appService.afterPropertiesSet();
     }
 
     @Test
@@ -85,5 +106,87 @@ class AppServiceTest {
                 .singletonList(Monitor.builder().id(1L).build()));
         when(warehouseService.queryMonitorMetricsData(anyLong())).thenReturn(Collections.emptyList());
         assertDoesNotThrow(() -> appService.getAllAppHierarchy("en-US"));
+    }
+
+    @Test
+    void appDefineJexl() throws NoSuchMethodException {
+        Job job = new Job();
+        job.setApp("test-app");
+        job.setCategory("service");
+        job.setName(Map.of("k", "v"));
+
+        List<RuntimeParamDefine> params = new ArrayList<>();
+        RuntimeParamDefine hostParam = new RuntimeParamDefine();
+        hostParam.setField("host");
+        hostParam.setType("host");
+        hostParam.setRequired(true);
+        params.add(hostParam);
+
+        RuntimeParamDefine portParam = new RuntimeParamDefine();
+        portParam.setField("port");
+        portParam.setType("number");
+        portParam.setRequired(true);
+        portParam.setDefaultValue("8080");
+        params.add(portParam);
+
+        job.setParams(params);
+
+        List<Metrics> metrics = new ArrayList<>();
+
+        Metrics otherMetrics = new Metrics();
+        otherMetrics.setName("details");
+        otherMetrics.setPriority((byte) 0);
+        otherMetrics.setProtocol("http");
+
+        List<Metrics.Field> fields = new ArrayList<>();
+        fields.add(Metrics.Field.builder().field("size").build());
+        otherMetrics.setFields(fields);
+
+        metrics.add(otherMetrics);
+        job.setMetrics(metrics);
+
+        Method verifyMethod = AppServiceImpl.class.getDeclaredMethod("verifyDefineAppContent", Job.class, boolean.class);
+        verifyMethod.setAccessible(true);
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            try {
+                verifyMethod.invoke(appService, job, false);
+            } catch (InvocationTargetException e) {
+                if (e.getCause() instanceof RuntimeException) {
+                    throw e.getCause();
+                }
+                throw new RuntimeException(e.getCause());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+        assertTrue(exception.getMessage().contains("prohibited keywords"));
+    }
+
+    @Test
+    void testRefreshStore() throws Exception {
+        List<Define> defines = new ArrayList<>();
+        Define define = Define.builder()
+                .app("mysql")
+                .content("""
+                        app: mysql
+                        params:
+                          - field: host_test
+                            name:
+                              en-US: Target Host
+                            type: host
+                            required: true""")
+                .build();
+        defines.add(define);
+
+        when(defineDao.findAll()).thenReturn(defines);
+
+        ObjectStoreDTO<Object> objectStoreDTO = new ObjectStoreDTO<>();
+        objectStoreDTO.setType(ObjectStoreDTO.Type.DATABASE);
+        ObjectStoreConfigChangeEvent objectStoreConfigChangeEvent = new ObjectStoreConfigChangeEvent(objectStoreDTO);
+        appService.onObjectStoreConfigChange(objectStoreConfigChangeEvent);
+
+        List<ParamDefineInfo> appParamDefines = appService.getAppParamDefines(define.getApp());
+        assertNotNull(appParamDefines);
+        assertTrue(appParamDefines.stream().anyMatch(t -> t.getField().equals("host_test")));
     }
 }

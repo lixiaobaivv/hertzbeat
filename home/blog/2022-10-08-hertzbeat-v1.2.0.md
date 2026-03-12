@@ -3,7 +3,6 @@ title: HertzBeat v1.2.0 Released! Easy-to-use and friendly open source real-time
 author: tom  
 author_title: tom   
 author_url: https://github.com/tomsun28  
-author_image_url: https://avatars.githubusercontent.com/u/24788200?s=400&v=4  
 tags: [opensource]
 ---
 
@@ -45,13 +44,13 @@ Bugfixes.
 2. [[web-app] fix redirect when monitors app is null #286](https://github.com/apache/hertzbeat/pull/286)
 3. [[alerter] bugfix aviator expression match npe #297](https://github.com/apache/hertzbeat/pull/297)
 4. [[doc] fix project name error #294](https://github.com/apache/hertzbeat/pull/294) contributed by @CharlieXCL
-5. [[common]feature:use "apache.http.conn.util" replace "sun.net.util" for upgrading java version #299](<https://github.com/dromara/> hertzbeat/pull/299) contributed by @Privauto
+5. [[common]feature:use "apache.http.conn.util" replace "sun.net.util" for upgrading java version #299]([https://github.com/dromara/](https://github.com/dromara/) hertzbeat/pull/299) contributed by @Privauto
 6. [Update docker-deploy.md #304](https://github.com/apache/hertzbeat/pull/304) contributed by @emrys-he
 7. [fix(sec): upgrade snakeyaml to 1.31 #313](https://github.com/apache/hertzbeat/pull/313) contributed by @SxLiuYu
 8. [[script] add startup log and optimize port service judgment #321](https://github.com/apache/hertzbeat/pull/321)
 9. [[web-app] fix echarts y-axis value tip overflow #325](https://github.com/apache/hertzbeat/pull/325)
 10. [[webapp] fix interceptor http resp common error-msg when error #329](https://github.com/apache/hertzbeat/pull/329)
-    Online <https://console.tancloud.cn>.
+    Online [https://console.tancloud.cn](https://console.tancloud.cn).
 
 Have Fun!
 
@@ -60,7 +59,7 @@ Have Fun!
 Need Convert `application.yml`.
 
 ```yaml
-spring.
+spring:
   resources: static-locations.
     static-locations.
       - classpath:/dist/
@@ -70,8 +69,8 @@ spring.
 To
 
 ```yaml
-spring.
-  web.
+spring:
+  web:
     resources: static-locations.
       static-locations.
         - classpath:/dist/

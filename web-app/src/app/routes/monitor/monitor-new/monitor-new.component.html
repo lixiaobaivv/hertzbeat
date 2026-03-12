@@ -19,7 +19,7 @@
 
 <app-help-message-show
   [help_message_content]="'monitor.app.' + monitor.app + '.help' | i18n"
-  [module_name]="('monitors.new' | i18n) + ' ' + ('monitor.app.' + monitor.app | i18n) + ' ' + ('monitor' | i18n)"
+  [module_name]="('monitor.new' | i18n) + ' ' + ('monitor.app.' + monitor.app | i18n) + ' ' + ('monitor' | i18n)"
   [guild_link]="'monitor.app.' + monitor.app + '.helpLink' | i18n"
   [icon_name]="'plus-circle'"
 ></app-help-message-show>
@@ -38,6 +38,12 @@
   [advancedParamDefines]="advancedParamDefines"
   [collector]="collector"
   [collectors]="collectors"
+  [labelKeys]="labelKeys"
+  [labelMap]="labelMap"
+  [labelIsCustom]="labelIsCustom"
+  [sdParams]="sdParams"
+  [sdDefines]="sdDefines"
+  (scrapeChange)="onScrapeChange($event)"
   (hostChange)="onHostChange($event)"
   (formCancel)="onCancel()"
   (formSubmit)="onSubmit($event)"

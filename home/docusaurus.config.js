@@ -2,22 +2,22 @@ const path = require('path')
 
 const organizationName = 'apache' // Usually your GitHub name.
 const projectName = 'hertzbeat' // Usually your repo name.
-const deploymentBranch = 'asf-site' 
+const deploymentBranch = 'asf-site'
 const branch = 'master'
 const repoUrl = `https://github.com/apache/${projectName}`
 const cdnUrl = null
 
 module.exports = {
-  title: 'Apache HertzBeat',
-  tagline: 'An open source, real-time monitoring tool with custom-monitor and agentLess.',
+  title: 'Apache HertzBeat - Agentless Monitoring System',
+  tagline: 'AI-powered open source real-time monitoring system for metrics, logs, alerts, and observability. No agent required.',
   url: 'https://hertzbeat.apache.org',
   baseUrl: '/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'throw',
   favicon: '/img/hertzbeat-logo.svg',
   organizationName,
-  projectName, 
-  deploymentBranch,  
+  projectName,
+  deploymentBranch,
   customFields: {
     repoUrl,
     cdnUrl,
@@ -27,6 +27,12 @@ module.exports = {
     locales: ['zh-cn', 'en'],
   },
   themeConfig: {
+    matomo: {
+      matomoUrl: 'https://analytics.apache.org/',
+      siteId: '67',
+      phpLoader: 'matomo.php',
+      jsLoader: 'matomo.js',
+    },
     image: '/img/hertzbeat-logo.svg',
     liveCodeBlock: {
       playgroundPosition: 'bottom',
@@ -34,7 +40,31 @@ module.exports = {
     metadata: [
       {
         name: 'keywords',
-        content: 'monitor, apm, 监控, 开源, uptime, opensource',
+        content: 'monitoring system, agentless monitoring, observability platform, metrics collection, log aggregation, alert management, prometheus compatible, open source monitoring, real-time monitoring, infrastructure monitoring, application monitoring, database monitoring, cloud monitoring, kubernetes monitoring, docker monitoring, network monitoring, APM, uptime monitoring, 监控系统, 开源监控',
+      },
+      {
+        name: 'description',
+        content: 'Apache HertzBeat is an AI-powered, agentless open source monitoring system. Monitor 200+ services including databases, servers, applications, and networks. Unified metrics, logs, alerts, and notifications in one platform.',
+      },
+      {
+        property: 'og:type',
+        content: 'website',
+      },
+      {
+        property: 'og:title',
+        content: 'Apache HertzBeat - Agentless Monitoring System',
+      },
+      {
+        property: 'og:description',
+        content: 'AI-powered open source monitoring for metrics, logs, alerts. No agent installation required. Monitor MySQL, PostgreSQL, Linux, Kubernetes, Docker, and 200+ services.',
+      },
+      {
+        name: 'twitter:card',
+        content: 'summary_large_image',
+      },
+      {
+        name: 'author',
+        content: 'Apache HertzBeat Community',
       },
     ],
     colorMode: {
@@ -43,8 +73,8 @@ module.exports = {
       respectPrefersColorScheme: true,
     },
     prism: {
-      theme: require('prism-react-renderer/themes/github'),
-      darkTheme: require('prism-react-renderer/themes/dracula'),
+      theme: require('prism-react-renderer').themes.github,
+      darkTheme: require('prism-react-renderer').themes.dracula,
       additionalLanguages: ['java'],
     },
     algolia: {
@@ -149,7 +179,7 @@ module.exports = {
             },
             {
               label: 'Events',
-              to: 'https://eu.communityovercode.org/',
+              to: 'https://www.apache.org/events/current-event.html',
             },
             {
               label: 'Security',
@@ -200,22 +230,22 @@ module.exports = {
         {
           type: 'localeDropdown',
           position: 'right',
-        }, 
+        },
         {
           href: repoUrl,
           position: 'right',
           className: 'header-github-link'
-        }, 
+        },
         {
-          href: 'https://twitter.com/hertzbeat1024',
+          href: 'https://x.com/hertzbeat1024',
           position: 'right',
           className: 'header-twitter-link'
-        }, 
+        },
         {
           href: 'https://www.youtube.com/channel/UCri75zfWX0GHqJFPENEbLow',
           position: 'right',
           className: 'header-youtube-link'
-        }, 
+        },
         {
           href: 'https://discord.gg/Fb6M73htGr',
           position: 'right',
@@ -273,23 +303,13 @@ module.exports = {
       },
       copyright:
         `
-        <div style="text-align: left;margin-top:30px">
-          <div style="align-items: center; display: flex">
-            <div style="width: 1200px; background-color: #282c77; padding: 10px; border-radius: 6px">
-              <a href="https://incubator.apache.org/">
-                <img src="/img/icons/apache-incubator.svg" alt="Apache Incubator logo">
-              </a>
-            </div>
-            <div style="margin-left: 40px">
-              <p style="font-size: 14px;line-height: 25px;">
-              Apache HertzBeat is an effort undergoing incubation at The Apache Software Foundation (ASF), sponsored by the Apache Incubator. Incubation is required of all newly accepted projects until a further review indicates that the infrastructure, communications, and decision making process have stabilized in a manner consistent with other successful ASF projects. While incubation status is not necessarily a reflection of the completeness or stability of the code, it does indicate that the project has yet to be fully endorsed by the ASF.
-              </p>
-            </div>
-          </div>
-
-          <div style="border-top: 1px solid #525252;min-height: 60px;line-height: 25px;text-align: left;font-size: 14px;display: flex;align-items: center;">
+        <div style="text-align: left;margin-top:20px">
+          <a href="https://apache.org/" style="display: flex; align-items: center; justify-content:center">
+            <img src="/img/icons/asf_logo.svg" alt="Apache logo" style="width:auto;height:140px">
+          </a>
+          <div style="margin-top:20px;border-top: 1px solid #525252;min-height: 60px;line-height: 25px;text-align: left;font-size: 14px;display: flex;align-items: center;">
             <span>
-              Copyright © ${new Date().getFullYear()} The Apache Software Foundation. Apache HertzBeat, HertzBeat, and its feather logo are trademarks of The Apache Software Foundation.
+              Copyright © ${new Date().getFullYear()} The Apache Software Foundation. Apache HertzBeat™, HertzBeat™, and its feather logo are trademarks of The Apache Software Foundation.
             </span>
           </div>
         </div>`,
@@ -307,11 +327,10 @@ module.exports = {
           remarkPlugins: [
             [require('@docusaurus/remark-plugin-npm2yarn'), { sync: true }],
           ],
-          lastVersion: 'current',
+          lastVersion: '1.8.0',
           versions: {
             current: {
               label: 'current',
-              path: '',
             },
           },
         },
@@ -320,12 +339,14 @@ module.exports = {
           postsPerPage: 1,
           feedOptions: {
             type: 'all',
-            copyright: `Copyright © ${new Date().getFullYear()} Apache HertzBeat.`,
+            copyright: `Copyright © ${new Date().getFullYear()} Apache HertzBeat™.`,
           },
           // Please change this to your repo.
           editUrl: `${repoUrl}/edit/${branch}/home/`,
           editLocalizedFiles: true,
-          blogSidebarCount: 'ALL'
+          blogSidebarCount: 'ALL',
+          onUntruncatedBlogPosts: 'ignore',
+          onInlineAuthors: 'ignore'
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
@@ -333,6 +354,8 @@ module.exports = {
         sitemap: {
           changefreq: 'weekly',
           priority: 0.5,
+          ignorePatterns: ['/tags/**'],
+          filename: 'sitemap.xml',
         },
       },
     ],
@@ -344,13 +367,13 @@ module.exports = {
         fromExtensions: ['html'],
       },
     ],
-    '@docusaurus/plugin-ideal-image',
+    'docusaurus-plugin-matomo',
     [
       '@docusaurus/plugin-pwa',
       {
         debug: false,
         offlineModeActivationStrategies: ['appInstalled', 'queryString'],
-        // swRegister: false,
+        swRegister: false,
         pwaHead: [
           {
             tagName: 'link',
@@ -369,7 +392,7 @@ module.exports = {
           },
           {
             tagName: 'meta',
-            name: 'apple-mobile-web-app-capable',
+            name: 'mobile-web-app-capable',
             content: 'yes',
           },
           {
@@ -402,5 +425,15 @@ module.exports = {
       },
     ],
   ],
-  themes: ['@docusaurus/theme-live-codeblock']
+  themes: ['@docusaurus/theme-live-codeblock'],
+  scripts: [
+    {
+      src: "https://widget.kapa.ai/kapa-widget.bundle.js",
+      "data-website-id": "cb9dd0e9-5736-4572-be75-fd2ebe7443b0",
+      "data-project-name": "Apache HertzBeat",
+      "data-project-color": "#444FD9",
+      "data-project-logo": "https://hertzbeat.apache.org/zh-cn/assets/files/hertzbeat-logo-f92c500146ae43b9cb901600cd274d67.png",
+      async: true,
+    },
+  ],
 }

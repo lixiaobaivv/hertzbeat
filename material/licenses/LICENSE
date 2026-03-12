@@ -1,3 +1,4 @@
+
                                  Apache License
                            Version 2.0, January 2004
                         http://www.apache.org/licenses/
@@ -189,6 +190,7 @@ Apache-2.0 licenses
 ========================================================================
 The following components are provided under the Apache-2.0 License. See project link for details.
 The text of each license is the standard Apache 2.0 license.
+    https://mvnrepository.com/artifact/com.xugudb/xugu-jdbc/12.3.5 Apache-2.0
     https://mvnrepository.com/artifact/cn.afterturn/easypoi-spring-boot-starter/4.3.0 Apache-2.0
     https://mvnrepository.com/artifact/cn.afterturn/easypoi-web/4.3.0 Apache-2.0
     https://mvnrepository.com/artifact/cn.afterturn/easypoi-base/4.3.0 Apache-2.0
@@ -235,8 +237,6 @@ The text of each license is the standard Apache 2.0 license.
     https://mvnrepository.com/artifact/com.squareup.okio/okio-jvm/3.6.0 Apache-2.0
     https://mvnrepository.com/artifact/com.squareup.retrofit2/converter-moshi/2.9.0 Apache-2.0
     https://mvnrepository.com/artifact/com.squareup.retrofit2/retrofit/2.9.0 Apache-2.0
-    https://mvnrepository.com/artifact/com.tencentcloudapi/tencentcloud-sdk-java-common/3.1.648 Apache-2.0
-    https://mvnrepository.com/artifact/com.tencentcloudapi/tencentcloud-sdk-java-sms/3.1.648 Apache-2.0
     https://mvnrepository.com/artifact/com.usthe.sureness/spring-boot3-starter-sureness/1.1.0 Apache-2.0
     https://mvnrepository.com/artifact/com.usthe.sureness/sureness-core/1.1.0 Apache-2.0
     https://mvnrepository.com/artifact/com.zaxxer/HikariCP/5.0.1 Apache-2.0
@@ -352,13 +352,15 @@ The text of each license is the standard Apache 2.0 license.
     https://mvnrepository.com/artifact/org.apache.rocketmq/rocketmq-remoting/4.9.4 Apache-2.0
     https://mvnrepository.com/artifact/org.apache.rocketmq/rocketmq-srvutil/4.9.4 Apache-2.0
     https://mvnrepository.com/artifact/org.apache.rocketmq/rocketmq-tools/4.9.4 Apache-2.0
-    https://mvnrepository.com/artifact/org.apache.sshd/sshd-common/2.8.0 Apache-2.0
-    https://mvnrepository.com/artifact/org.apache.sshd/sshd-core/2.8.0 Apache-2.0
+    https://mvnrepository.com/artifact/org.apache.sshd/sshd-common/2.13.1 Apache-2.0
+    https://mvnrepository.com/artifact/org.apache.sshd/sshd-core/2.13.1 Apache-2.0
+    https://mvnrepository.com/artifact/org.apache.sshd/sshd-sftp/2.13.1 Apache-2.0
     https://mvnrepository.com/artifact/org.apache.tomcat.embed/tomcat-embed-el/10.1.19 Apache-2.0
     https://mvnrepository.com/artifact/org.apache.tomcat.embed/tomcat-embed-websocket/10.1.19 Apache-2.0
     https://mvnrepository.com/artifact/org.apache.xmlbeans/xmlbeans/3.1.0 Apache-2.0
     https://mvnrepository.com/artifact/org.apache.plc4x/plc4j-api/0.12.0 Apache-2.0
     https://mvnrepository.com/artifact/org.apache.plc4x/plc4j-driver-modbus/0.12.0 Apache-2.0
+    https://mvnrepository.com/artifact/org.apache.plc4x/plc4j-driver-s7/0.12.0 Apache-2.0
     https://mvnrepository.com/artifact/org.attoparser/attoparser/2.0.7.RELEASE Apache-2.0
     https://mvnrepository.com/artifact/org.freemarker/freemarker/2.3.32 Apache-2.0
     https://mvnrepository.com/artifact/org.flywaydb/flyway-core/10.11.1
@@ -432,10 +434,15 @@ The text of each license is the standard Apache 2.0 license.
     https://mvnrepository.com/artifact/org.apache.poi/poi-ooxml/4.1.1 Apache-2.0
     https://mvnrepository.com/artifact/org.apache.poi/poi-ooxml-schemas/4.1.1 Apache-2.0
     https://mvnrepository.com/artifact/xml-apis/xml-apis/1.4.01 Apache-2.0
-    https://mvnrepository.com/artifact/org.webjars/swagger-ui/5.10.3
-    https://mvnrepository.com/artifact/com.google.flatbuffers/flatbuffers-java/1.12.0
-    https://mvnrepository.com/artifact/com.vesoft/client/3.6.0
-
+    https://mvnrepository.com/artifact/org.webjars/swagger-ui/5.10.3 Apache-2.0
+    https://mvnrepository.com/artifact/com.google.flatbuffers/flatbuffers-java/1.12.0 Apache-2.0
+    https://mvnrepository.com/artifact/com.vesoft/client/3.6.0 Apache-2.0
+    https://mvnrepository.com/artifact/io.opentelemetry.instrumentation/opentelemetry-spring-boot-starter-2.15.0 Apache-2.0
+    https://mvnrepository.com/artifact/io.opentelemetry.instrumentation/opentelemetry-logback-appender-1.0 Apache-2.0
+    https://mvnrepository.com/artifact/org.apache.zookeeper/zookeeper/3.9.3 Apache-2.0
+    https://mvnrepository.com/artifact/io.opentelemetry.proto/opentelemetry-proto/1.7.0-alpha Apache-2.0
+    https://mvnrepository.com/artifact/org.questdb/questdb Apache-2.0
+    https://mvnrepository.com/artifact/org.awaitility/awaitility/4.2.0 Apache-2.0
 
 ========================================================================
 BSD-2-Clause licenses
@@ -509,11 +516,6 @@ The text of each license is also included in licenses/LICENSE-[project].txt.
     https://mvnrepository.com/artifact/jakarta.transaction/jakarta.transaction-api/2.0.1
     https://mvnrepository.com/artifact/org.eclipse.angus/jakarta.mail/2.0.2
     https://mvnrepository.com/artifact/org.aspectj/aspectjweaver/1.9.21
-    https://mvnrepository.com/artifact/org.eclipse.persistence/eclipselink/4.0.2
-    https://mvnrepository.com/artifact/org.eclipse.persistence/org.eclipse.persistence.asm/9.5.0 
-    https://mvnrepository.com/artifact/org.eclipse.persistence/org.eclipse.persistence.core/4.0.2 
-    https://mvnrepository.com/artifact/org.eclipse.persistence/org.eclipse.persistence.jpa/4.0.2 
-    https://mvnrepository.com/artifact/org.eclipse.persistence/org.eclipse.persistence.jpa.jpql/4.0.2
 
 
 ========================================================================
@@ -536,6 +538,7 @@ The text of each license is also included in licenses/LICENSE-[project].txt.
     https://mvnrepository.com/artifact/com.taosdata.jdbc/taos-jdbcdriver/3.0.0
     https://mvnrepository.com/artifact/com.beetstra.jutf7/jutf7/1.0.0
     https://mvnrepository.com/artifact/org.testcontainers/kafka/1.20.2 MIT
+    https://mvnrepository.com/artifact/org.duckdb/duckdb_jdbc/1.4.2.0 MIT
 
 ========================================================================
 MPL-1.1 licenses

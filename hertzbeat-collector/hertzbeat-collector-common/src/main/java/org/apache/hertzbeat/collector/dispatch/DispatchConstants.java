@@ -126,7 +126,24 @@ public interface DispatchConstants {
     /**
      * protocol http sd
      */
-    String PROTOCOL_HTTP_SD = "httpsd";
+    String PROTOCOL_HTTP_SD = "http_sd";
+    /**
+     * protocol nacos sd
+     */
+    String PROTOCOL_NACOS_SD = "nacos_sd";
+    /**
+     * protocol dns sd
+     */
+    String PROTOCOL_DNS_SD = "dns_sd";
+    /**
+     * protocol eureka sd
+     */
+    String PROTOCOL_EUREKA_SD = "eureka_sd";
+
+    /**
+     * protocol consul sd
+     */
+    String PROTOCOL_CONSUL_SD = "consul_sd";
     /**
      * protocol redfish
      */
@@ -203,6 +220,10 @@ public interface DispatchConstants {
      */
     String PARSE_PROMETHEUS = "prometheus";
     /**
+     * Parse response body as config/properties format
+     */
+    String PARSE_CONFIG = "config";
+    /**
      * prometheus accept header
      */
     String PARSE_PROMETHEUS_ACCEPT = "application/openmetrics-text; version=0.0.1,text/plain;version=0.0.4;q=0.5,*/*;q=0.1";
@@ -227,4 +248,9 @@ public interface DispatchConstants {
      * protocol modbus
      */
     String PROTOCOL_MODBUS = "modbus";
+
+    /**
+     * protocol modbus
+     */
+    String PROTOCOL_S7 = "s7";
 }

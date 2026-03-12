@@ -17,7 +17,6 @@
 
 package org.apache.hertzbeat.collector.collect.prometheus.parser;
 
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -30,8 +29,10 @@ import org.apache.hertzbeat.common.util.StrBuffer;
 /**
  * Resolves the data passed by prometheus's exporter interface http:xxx/metrics
  * Reference: prometheus text_parse.go code, entry: TextToMetricFamilies
+ * recommend use OnlineParser
  */
 @Slf4j
+@Deprecated(since = "1.7.0")
 public class TextParser {
     private static final String NAME_LABEL = "__name__";
     private static final char LEFT_CURLY_BRACKET = '{';
@@ -45,7 +46,6 @@ public class TextParser {
 
     /**
      * parser prometheus exporter text metrics data
-     * todo use inputStream bytebuffer instead of resp string
      * @param resp txt data
      * @return metrics family
      */
@@ -300,6 +300,6 @@ public class TextParser {
      * @return true/false
      */
     private static boolean isValidLabelValue(String s) {
-        return s != null && s.equals(new String(s.getBytes(StandardCharsets.UTF_8)));
+        return s != null;
     }
 }

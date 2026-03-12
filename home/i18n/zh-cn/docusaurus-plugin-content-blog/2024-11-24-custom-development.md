@@ -3,7 +3,6 @@ title:  如何参与开发自定义Collector
 author: zhangshenghang
 author_title: zhangshenghang
 author_url: https://github.com/zhangshenghang
-author_image_url: https://avatars.githubusercontent.com/u/29418975?s=400&v=4
 tags: [opensource, practice]
 keywords: [open source monitoring system, alerting system]
 ---
@@ -23,10 +22,10 @@ Collector模块整体结构可以分为四个主要部分，每个部分承担�
 - **collector-xxx**：这是为不同服务或协议的扩展Collector模块。例如，MongoDB、RocketMQ等特定服务的监控，往往需要引入它们的专有依赖，并在各自模块中进行开发。以下是MongoDB的依赖示例：
 
   ```xml
-  <dependency>
-      <groupId>org.mongodb</groupId>
-      <artifactId>mongodb-driver-sync</artifactId>
-  </dependency>
+  `<dependency>`
+      `<groupId>`org.mongodb`</groupId>`
+      `<artifactId>`mongodb-driver-sync`</artifactId>`
+  `</dependency>`
   ```
 
 通过这种模块化设计，Collector可以轻松地扩展并适配多种监控场景。
@@ -47,35 +46,35 @@ Collector模块整体结构可以分为四个主要部分，每个部分承担�
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>org.apache.hertzbeat</groupId>
-        <artifactId>hertzbeat-collector</artifactId>
-        <version>2.0-SNAPSHOT</version>
-    </parent>
+    `<modelVersion>`4.0.0`</modelVersion>`
+    `<parent>`
+        `<groupId>`org.apache.hertzbeat`</groupId>`
+        `<artifactId>`hertzbeat-collector`</artifactId>`
+        `<version>`2.0-SNAPSHOT`</version>`
+    `</parent>`
 
-    <artifactId>hertzbeat-collector-kafka</artifactId>
-    <name>${project.artifactId}</name>
+    `<artifactId>`hertzbeat-collector-kafka`</artifactId>`
+    `<name>`${project.artifactId}`</name>`
 
-    <properties>
+    `<properties>`
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
+    `</properties>`
 
-    <dependencies>
-        <dependency>
-            <groupId>org.apache.hertzbeat</groupId>
-            <artifactId>hertzbeat-collector-common</artifactId>
-            <scope>provided</scope>
-        </dependency>
+    `<dependencies>`
+        `<dependency>`
+            `<groupId>`org.apache.hertzbeat`</groupId>`
+            `<artifactId>`hertzbeat-collector-common`</artifactId>`
+            `<scope>`provided`</scope>`
+        `</dependency>`
         <!-- kafka -->
-        <dependency>
-            <groupId>org.apache.kafka</groupId>
-            <artifactId>kafka-clients</artifactId>
-        </dependency>
-    </dependencies>
-</project>
+        `<dependency>`
+            `<groupId>`org.apache.kafka`</groupId>`
+            `<artifactId>`kafka-clients`</artifactId>`
+        `</dependency>`
+    `</dependencies>`
+`</project>`
 ```
 
 此处需要注意的内容：
@@ -153,7 +152,7 @@ import org.apache.kafka.clients.admin.KafkaAdminClient;
 
 import java.util.Properties;
 
-public class KafkaConnect extends AbstractConnection<AdminClient> {
+public class KafkaConnect extends AbstractConnection`<AdminClient>` {
 
     private static AdminClient adminClient;
 
@@ -293,7 +292,7 @@ public class KafkaCollectImpl extends AbstractCollect {
      */
     private void collectTopicOffset(CollectRep.MetricsData.Builder builder, AdminClient adminClient) throws InterruptedException, ExecutionException {
         ListTopicsResult listTopicsResult = adminClient.listTopics(new ListTopicsOptions().listInternal(true));
-        Set<String> names = listTopicsResult.names().get();
+        Set`<String>` names = listTopicsResult.names().get();
         names.forEach(name -> {
             try {
                 Map<String, TopicDescription> map = adminClient.describeTopics(Collections.singleton(name)).all().get(3L, TimeUnit.SECONDS);
@@ -362,7 +361,7 @@ public class KafkaCollectImpl extends AbstractCollect {
      */
     private static void collectTopicList(CollectRep.MetricsData.Builder builder, AdminClient adminClient) throws InterruptedException, ExecutionException {
         ListTopicsOptions options = new ListTopicsOptions().listInternal(true);
-        Set<String> names = adminClient.listTopics(options).names().get();
+        Set`<String>` names = adminClient.listTopics(options).names().get();
         names.forEach(name -> {
             CollectRep.ValueRow valueRow = CollectRep.ValueRow.newBuilder().addColumns(name).build();
             builder.addValues(valueRow);
@@ -379,11 +378,11 @@ public class KafkaCollectImpl extends AbstractCollect {
         ListTopicsOptions options = new ListTopicsOptions();
         options.listInternal(true);
         ListTopicsResult listTopicsResult = adminClient.listTopics(options);
-        Set<String> names = listTopicsResult.names().get();
+        Set`<String>` names = listTopicsResult.names().get();
         DescribeTopicsResult describeTopicsResult = adminClient.describeTopics(names);
         Map<String, TopicDescription> map = describeTopicsResult.all().get();
         map.forEach((key, value) -> {
-            List<TopicPartitionInfo> listp = value.partitions();
+            List`<TopicPartitionInfo>` listp = value.partitions();
             listp.forEach(info -> {
                 CollectRep.ValueRow.Builder valueRowBuilder = CollectRep.ValueRow.newBuilder();
                 valueRowBuilder.addColumns(value.name());
@@ -419,11 +418,11 @@ org.apache.hertzbeat.collector.collect.kafka.KafkaCollectImpl
 最后一步是在`collector/collector/pom.xml`中添加`kafka-collector`模块的依赖：
 
 ```xml
-<dependency>
-    <groupId>org.apache.hertzbeat</groupId>
-    <artifactId>hertzbeat-collector-kafka</artifactId>
-    <version>${hertzbeat.version}</version>
-</dependency>
+`<dependency>`
+    `<groupId>`org.apache.hertzbeat`</groupId>`
+    `<artifactId>`hertzbeat-collector-kafka`</artifactId>`
+    `<version>`${hertzbeat.version}`</version>`
+`</dependency>`
 ```
 
 通过以上步骤，我们就完成了一个Kafka Collector的开发，从协议定义到最终的SPI配置和依赖管理，完整的扩展了一个Kafka监控模块。
@@ -456,9 +455,9 @@ name:
   en-US: Kafka Message（Client）
 # The description and help of this monitoring type
 help:
-  zh-CN: HertzBeat 使用 <a href="https://hertzbeat.apache.org/docs/advanced/extend-jmx">Kafka Admin Client</a> 对 Kafka 的通用指标进行采集监控。</span>
-  en-US: HertzBeat uses <a href='https://hertzbeat.apache.org/docs/advanced/extend-jmx'>Kafka Admin Client</a> to monitoring kafka general metrics. </span>
-  zh-TW: HertzBeat 使用 <a href="https://hertzbeat.apache.org/docs/advanced/extend-jmx">Kafka Admin Client</a> 對 Kafka 的通用指標進行采集監控。</span>
+  zh-CN: HertzBeat 使用 <a href="https://hertzbeat.apache.org/docs/advanced/extend-jmx">Kafka Admin Client`</a>` 对 Kafka 的通用指标进行采集监控。`</span>`
+  en-US: HertzBeat uses <a href='https://hertzbeat.apache.org/docs/advanced/extend-jmx'>Kafka Admin Client`</a>` to monitoring kafka general metrics. `</span>`
+  zh-TW: HertzBeat 使用 <a href="https://hertzbeat.apache.org/docs/advanced/extend-jmx">Kafka Admin Client`</a>` 對 Kafka 的通用指標進行采集監控。`</span>`
 helpLink:
   zh-CN: https://hertzbeat.apache.org/zh-cn/docs/help/kafka_client
   en-US: https://hertzbeat.apache.org/docs/help/kafka_client
@@ -611,9 +610,9 @@ metrics:
 
 ```xml
     <!-- collector-kafka -->
-        <dependency>
-            <groupId>org.apache.hertzbeat</groupId>
-            <artifactId>hertzbeat-collector-kafka</artifactId>
-            <version>${hertzbeat.version}</version>
-        </dependency>
+        `<dependency>`
+            `<groupId>`org.apache.hertzbeat`</groupId>`
+            `<artifactId>`hertzbeat-collector-kafka`</artifactId>`
+            `<version>`${hertzbeat.version}`</version>`
+        `</dependency>`
 ```

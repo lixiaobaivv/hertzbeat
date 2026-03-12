@@ -18,13 +18,16 @@
 package org.apache.hertzbeat.collector.collect.http;
 
 import static org.apache.hertzbeat.common.constants.SignConstants.RIGHT_DASH;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import java.io.ByteArrayInputStream;
+
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InterruptedIOException;
+import java.io.StringReader;
 import java.net.ConnectException;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
@@ -34,20 +37,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import javax.net.ssl.SSLException;
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
+
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.net.util.Base64;
 import org.apache.hertzbeat.collector.collect.AbstractCollect;
 import org.apache.hertzbeat.collector.collect.common.http.CommonHttpClient;
 import org.apache.hertzbeat.collector.collect.http.promethus.AbstractPrometheusParse;
 import org.apache.hertzbeat.collector.collect.http.promethus.PrometheusParseCreator;
-import org.apache.hertzbeat.collector.collect.http.promethus.exporter.ExporterParser;
-import org.apache.hertzbeat.collector.collect.http.promethus.exporter.MetricFamily;
+import org.apache.hertzbeat.collector.collect.prometheus.parser.MetricFamily;
+import org.apache.hertzbeat.collector.collect.prometheus.parser.OnlineParser;
 import org.apache.hertzbeat.collector.constants.CollectorConstants;
 import org.apache.hertzbeat.collector.dispatch.DispatchConstants;
 import org.apache.hertzbeat.collector.util.CollectUtil;
@@ -59,15 +65,15 @@ import org.apache.hertzbeat.common.constants.SignConstants;
 import org.apache.hertzbeat.common.entity.job.Metrics;
 import org.apache.hertzbeat.common.entity.job.protocol.HttpProtocol;
 import org.apache.hertzbeat.common.entity.message.CollectRep;
+import org.apache.hertzbeat.common.util.Base64Util;
 import org.apache.hertzbeat.common.util.CommonUtil;
 import org.apache.hertzbeat.common.util.IpDomainUtil;
 import org.apache.http.Header;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
-import org.apache.http.HttpHost;
 import org.apache.http.HttpStatus;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.AuthCache;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.config.RequestConfig;
@@ -77,8 +83,6 @@ import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.auth.DigestScheme;
-import org.apache.http.impl.client.BasicAuthCache;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
@@ -86,19 +90,46 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
+import org.springframework.web.util.UriUtils;
+import org.xml.sax.InputSource;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  * http https collect
  */
 @Slf4j
 public class HttpCollectImpl extends AbstractCollect {
-    private static final Map<Long, ExporterParser> EXPORTER_PARSER_TABLE = new ConcurrentHashMap<>();
-    private final Set<Integer> defaultSuccessStatusCodes = Stream.of(HttpStatus.SC_OK, HttpStatus.SC_CREATED,
-            HttpStatus.SC_ACCEPTED, HttpStatus.SC_MULTIPLE_CHOICES, HttpStatus.SC_MOVED_PERMANENTLY,
-            HttpStatus.SC_MOVED_TEMPORARILY).collect(Collectors.toSet());
+
+    /**
+     * Pre-compiled regex patterns for dangerous Xpath detection.
+     * Compiled once at class load for performance.
+     */
+    private static final List<Pattern> DANGEROUS_XPATH_PATTERNS;
+
+    static {
+        List<Pattern> patterns = new ArrayList<>();
+        for (String pattern : CollectorConstants.DANGEROUS_XPATH_PATTERNS) {
+            // Use CASE_INSENSITIVE to prevent bypass via case variations (e.g., //TEXT() vs //text())
+            patterns.add(Pattern.compile(pattern, Pattern.CASE_INSENSITIVE | Pattern.DOTALL));
+        }
+        DANGEROUS_XPATH_PATTERNS = Collections.unmodifiableList(patterns);
+    }
+
+    private final Set<Integer> defaultSuccessStatusCodes = Set.of(
+            HttpStatus.SC_OK,
+            HttpStatus.SC_CREATED,
+            HttpStatus.SC_ACCEPTED,
+            HttpStatus.SC_MULTIPLE_CHOICES,
+            HttpStatus.SC_MOVED_PERMANENTLY,
+            HttpStatus.SC_MOVED_TEMPORARILY);
 
     @Override
     public void preCheck(Metrics metrics) throws IllegalArgumentException {
@@ -131,34 +162,46 @@ public class HttpCollectImpl extends AbstractCollect {
                 builder.setMsg(NetworkConstants.STATUS_CODE + SignConstants.BLANK + statusCode);
                 return;
             }
-            // todo This code converts an InputStream directly to a String. For large data in Prometheus exporters,
-            // this could create large objects, potentially impacting JVM memory space significantly.
-            // Option 1: Parse using InputStream, but this requires significant code changes;
-            // Option 2: Manually trigger garbage collection, similar to how it's done in Dubbo for large inputs.
-            String resp = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
-            if (!StringUtils.hasText(resp)) {
-                log.info("http response entity is empty, status: {}.", statusCode);
-            }
-            Long responseTime = System.currentTimeMillis() - startTime;
+
+            long responseTime = System.currentTimeMillis() - startTime;
             String parseType = metrics.getHttp().getParseType();
+            HttpEntity entity = response.getEntity();
+
             try {
-                switch (parseType) {
-                    case DispatchConstants.PARSE_JSON_PATH ->
-                            parseResponseByJsonPath(resp, metrics.getAliasFields(), metrics.getHttp(), builder, responseTime);
-                    case DispatchConstants.PARSE_PROM_QL ->
-                            parseResponseByPromQl(resp, metrics.getAliasFields(), metrics.getHttp(), builder);
-                    case DispatchConstants.PARSE_PROMETHEUS ->
-                            parseResponseByPrometheusExporter(resp, metrics.getAliasFields(), builder);
-                    case DispatchConstants.PARSE_XML_PATH ->
-                            parseResponseByXmlPath(resp, metrics.getAliasFields(), metrics.getHttp(), builder);
-                    case DispatchConstants.PARSE_WEBSITE ->
-                            parseResponseByWebsite(resp, metrics, metrics.getHttp(), builder, responseTime, response);
-                    case DispatchConstants.PARSE_SITE_MAP ->
-                            parseResponseBySiteMap(resp, metrics.getAliasFields(), builder);
-                    case DispatchConstants.PARSE_HEADER ->
-                            parseResponseByHeader(builder, metrics.getAliasFields(), response);
-                    default ->
-                            parseResponseByDefault(resp, metrics.getAliasFields(), metrics.getHttp(), builder, responseTime);
+                if (DispatchConstants.PARSE_PROMETHEUS.equals(parseType)) {
+                    if (entity != null) {
+                        parseResponseByPrometheusExporter(entity.getContent(), metrics.getAliasFields(), builder);
+                    }
+                } else if (DispatchConstants.PARSE_HEADER.equals(parseType)) {
+                    parseResponseByHeader(builder, metrics.getAliasFields(), response);
+                    // Consume entity to release connection
+                    EntityUtils.consumeQuietly(entity);
+                } else {
+                    /*
+                     this could create large objects, potentially impacting JVM memory space significantly.
+                     Option 1: Parse using InputStream, but this requires significant code changes;
+                     Option 2: Manually trigger garbage collection, similar to how it's done in Dubbo for large inputs.
+                     */
+                    String resp = entity == null ? "" : EntityUtils.toString(entity, StandardCharsets.UTF_8);
+                    if (!StringUtils.hasText(resp)) {
+                        log.info("http response entity is empty, status: {}.", statusCode);
+                    }
+                    switch (parseType) {
+                        case DispatchConstants.PARSE_JSON_PATH ->
+                                parseResponseByJsonPath(resp, metrics.getAliasFields(), metrics.getHttp(), builder, responseTime);
+                        case DispatchConstants.PARSE_PROM_QL ->
+                                parseResponseByPromQl(resp, metrics.getAliasFields(), metrics.getHttp(), builder);
+                        case DispatchConstants.PARSE_XML_PATH ->
+                                parseResponseByXmlPath(resp, metrics, builder, responseTime);
+                        case DispatchConstants.PARSE_WEBSITE ->
+                                parseResponseByWebsite(resp, metrics, metrics.getHttp(), builder, responseTime, statusCode);
+                        case DispatchConstants.PARSE_SITE_MAP ->
+                                parseResponseBySiteMap(resp, metrics.getAliasFields(), builder);
+                        case DispatchConstants.PARSE_CONFIG ->
+                                parseResponseByConfig(resp, metrics.getAliasFields(), metrics.getHttp(), builder, responseTime);
+                        default ->
+                                parseResponseByDefault(resp, metrics.getAliasFields(), metrics.getHttp(), builder, responseTime);
+                    }
                 }
             } catch (Exception e) {
                 log.info("parse error: {}.", e.getMessage(), e);
@@ -221,12 +264,15 @@ public class HttpCollectImpl extends AbstractCollect {
     }
 
     private void parseResponseByWebsite(String resp, Metrics metrics, HttpProtocol http,
-                                        CollectRep.MetricsData.Builder builder, Long responseTime,
-                                        CloseableHttpResponse response) {
+                                        CollectRep.MetricsData.Builder builder, Long responseTime, int statusCode) {
         CollectRep.ValueRow.Builder valueRowBuilder = CollectRep.ValueRow.newBuilder();
         int keywordNum = CollectUtil.countMatchKeyword(resp, http.getKeyword());
         for (String alias : metrics.getAliasFields()) {
-            addColumnForSummary(responseTime, valueRowBuilder, keywordNum, alias);
+            if (CollectorConstants.STATUS_CODE.equalsIgnoreCase(alias)) {
+                valueRowBuilder.addColumn(Integer.toString(statusCode));
+            } else {
+                addColumnForSummary(responseTime, valueRowBuilder, keywordNum, alias);
+            }
         }
         builder.addValueRow(valueRowBuilder.build());
     }
@@ -247,8 +293,11 @@ public class HttpCollectImpl extends AbstractCollect {
         boolean isXmlFormat = true;
         try {
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            // see https://cheatsheetseries.owasp.org/cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.html
+            dbf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+            dbf.setXIncludeAware(false);
             DocumentBuilder db = dbf.newDocumentBuilder();
-            Document document = db.parse(new ByteArrayInputStream(resp.getBytes(StandardCharsets.UTF_8)));
+            Document document = db.parse(new InputSource(new StringReader(resp)));
             NodeList urlList = document.getElementsByTagName("url");
             for (int i = 0; i < urlList.getLength(); i++) {
                 Node urlNode = urlList.item(i);
@@ -286,9 +335,10 @@ public class HttpCollectImpl extends AbstractCollect {
             long startTime = System.currentTimeMillis();
             try {
                 HttpGet httpGet = new HttpGet(siteUrl);
-                CloseableHttpResponse response = CommonHttpClient.getHttpClient().execute(httpGet);
-                statusCode = response.getStatusLine().getStatusCode();
-                EntityUtils.consume(response.getEntity());
+                try (CloseableHttpResponse response = CommonHttpClient.getHttpClient().execute(httpGet)) {
+                    statusCode = response.getStatusLine().getStatusCode();
+                    EntityUtils.consume(response.getEntity());
+                }
             } catch (ClientProtocolException e1) {
                 if (e1.getCause() != null) {
                     errorMsg = e1.getCause().getMessage();
@@ -324,8 +374,278 @@ public class HttpCollectImpl extends AbstractCollect {
         }
     }
 
-    private void parseResponseByXmlPath(String resp, List<String> aliasFields, HttpProtocol http,
-                                        CollectRep.MetricsData.Builder builder) {
+    /**
+     * Validates the Xpath expression to prevent DoS attacks.
+     * Checks for dangerous patterns that could traverse the entire XML document.
+     * Uses pre-compiled patterns for performance and case-insensitive matching for security.
+     *
+     * @param xpathExpression the Xpath expression to validate
+     * @throws IllegalArgumentException if the expression contains dangerous patterns
+     */
+    private void validateXpathExpression(String xpathExpression) throws IllegalArgumentException {
+        if (!StringUtils.hasText(xpathExpression)) {
+            return;
+        }
+
+        // Check against dangerous patterns using pre-compiled regex
+        for (Pattern pattern : DANGEROUS_XPATH_PATTERNS) {
+            Matcher matcher = pattern.matcher(xpathExpression);
+            if (matcher.find()) {
+                throw new IllegalArgumentException(
+                    "Xpath expression contains dangerous pattern that may cause DoS: " + pattern.pattern()
+                );
+            }
+        }
+
+        // Check for excessive wildcard usage (more than 3 // or * operators)
+        long descendantAxisCount = xpathExpression.chars().filter(ch -> ch == '/').count();
+        long wildcardCount = xpathExpression.chars().filter(ch -> ch == '*').count();
+
+        if (descendantAxisCount > 10 || wildcardCount > 5) {
+            throw new IllegalArgumentException(
+                "Xpath expression contains too many wildcards or descendant axes, potential DoS risk"
+            );
+        }
+
+        log.debug("Xpath expression validation passed: {}", xpathExpression);
+    }
+
+    private void parseResponseByXmlPath(String resp, Metrics metrics,
+                                        CollectRep.MetricsData.Builder builder, Long responseTime) {
+        HttpProtocol http = metrics.getHttp();
+        List<String> aliasFields = metrics.getAliasFields();
+        String xpathExpression = http.getParseScript();
+
+        // Layer 1: Validate Xpath expression is not empty
+        if (!StringUtils.hasText(xpathExpression)) {
+            log.warn("Http collect parse type is xmlPath, but the xpath expression is empty.");
+            builder.setCode(CollectRep.Code.FAIL);
+            builder.setMsg("Xpath expression is empty");
+            return;
+        }
+
+        // Layer 2: Check XML response size to prevent memory exhaustion
+        if (resp != null && resp.length() > CollectorConstants.MAX_XML_RESPONSE_SIZE) {
+            log.warn("XML response size {} bytes exceeds maximum allowed size {} bytes",
+                resp.length(), CollectorConstants.MAX_XML_RESPONSE_SIZE);
+            builder.setCode(CollectRep.Code.FAIL);
+            builder.setMsg("XML response exceeds maximum allowed size of "
+                + (CollectorConstants.MAX_XML_RESPONSE_SIZE / 1024 / 1024) + "MB");
+            return;
+        }
+
+        // Layer 3: Validate Xpath expression for dangerous patterns
+        try {
+            validateXpathExpression(xpathExpression);
+        } catch (IllegalArgumentException e) {
+            log.warn("Xpath expression validation failed: {}", e.getMessage());
+            builder.setCode(CollectRep.Code.FAIL);
+            builder.setMsg(e.getMessage());
+            return;
+        }
+
+        int keywordNum = CollectUtil.countMatchKeyword(resp, http.getKeyword());
+
+        try {
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+
+            // Layer 4: Enable XML secure processing and XXE protection
+            dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            dbf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+            dbf.setFeature("http://xml.org/sax/features/external-general-entities", false);
+            dbf.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+            dbf.setXIncludeAware(false);
+            dbf.setExpandEntityReferences(false);
+
+            DocumentBuilder db = dbf.newDocumentBuilder();
+            Document document = db.parse(new InputSource(new StringReader(resp)));
+
+            XPathFactory xpathFactory = XPathFactory.newInstance();
+            XPath xpath = xpathFactory.newXPath();
+
+            NodeList nodeList = (NodeList) xpath.evaluate(xpathExpression, document, XPathConstants.NODESET);
+
+            if (nodeList == null || nodeList.getLength() == 0) {
+                log.debug("Xpath expression '{}' returned no nodes.", xpathExpression);
+                boolean requestedSummaryFields = aliasFields.stream()
+                        .anyMatch(alias -> NetworkConstants.RESPONSE_TIME.equalsIgnoreCase(alias)
+                                || CollectorConstants.KEYWORD.equalsIgnoreCase(alias));
+
+                if (requestedSummaryFields) {
+                    CollectRep.ValueRow.Builder valueRowBuilder = CollectRep.ValueRow.newBuilder();
+                    for (String alias : aliasFields) {
+                        if (NetworkConstants.RESPONSE_TIME.equalsIgnoreCase(alias)) {
+                            valueRowBuilder.addColumn(responseTime.toString());
+                        } else if (CollectorConstants.KEYWORD.equalsIgnoreCase(alias)) {
+                            valueRowBuilder.addColumn(Integer.toString(keywordNum));
+                        } else {
+                            valueRowBuilder.addColumn(CommonConstants.NULL_VALUE);
+                        }
+                    }
+                    builder.addValueRow(valueRowBuilder.build());
+                }
+                return;
+            }
+
+            // Layer 5: Limit the number of results to prevent excessive resource consumption
+            int resultSize = nodeList.getLength();
+            int maxResults = CollectorConstants.MAX_XPATH_RESULT_NODES;
+            if (resultSize > maxResults) {
+                log.warn("Xpath expression returned {} nodes, exceeding limit of {}. Processing first {} nodes only.",
+                    resultSize, maxResults, maxResults);
+                resultSize = maxResults;
+            }
+
+            for (int i = 0; i < resultSize; i++) {
+                Node node = nodeList.item(i);
+                CollectRep.ValueRow.Builder valueRowBuilder = CollectRep.ValueRow.newBuilder();
+
+                for (String alias : aliasFields) {
+                    if (NetworkConstants.RESPONSE_TIME.equalsIgnoreCase(alias)) {
+                        valueRowBuilder.addColumn(responseTime.toString());
+                    } else if (CollectorConstants.KEYWORD.equalsIgnoreCase(alias)) {
+                        valueRowBuilder.addColumn(Integer.toString(keywordNum));
+                    } else {
+                        try {
+                            String value = (String) xpath.evaluate(alias, node, XPathConstants.STRING);
+                            valueRowBuilder.addColumn(StringUtils.hasText(value) ? value : CommonConstants.NULL_VALUE);
+                        } catch (XPathExpressionException e) {
+                            log.warn("Failed to evaluate Xpath '{}' for node [{}]: {}", alias, node.getNodeName(), e.getMessage());
+                            valueRowBuilder.addColumn(CommonConstants.NULL_VALUE);
+                        }
+                    }
+                }
+                builder.addValueRow(valueRowBuilder.build());
+            }
+
+        } catch (Exception e) {
+            log.warn("Failed to parse XML response with Xpath '{}': {}", xpathExpression, e.getMessage(), e);
+            builder.setCode(CollectRep.Code.FAIL);
+            builder.setMsg("Failed to parse XML response: " + e.getMessage());
+        }
+    }
+
+
+
+    /**
+     * Parses the response body in Properties/Config format.
+     * Two modes are supported:
+     * 1. single-object mode: if http.parseScript is null, aliasFields are treated as indicator names.
+     * - If there is a locator in the indicator definition, use the locator as the key of the Properties.
+     * - Otherwise, use aliasField (metric name) as the key for Properties.
+     * Generate a single row of data.
+     * 2. array mode: if http.parseScript is not empty (e.g. “users”), treat it as an array base path.
+     * Treat aliasFields as the attribute name of an array element, and generate a single row of data for each array index. locator is invalid in this mode.
+     *
+     * @param resp Response body string
+     * @param aliasFields List of metrics aliases (i.e., the list of fields in metrics.fields).
+     * @param http http protocol configuration
+     * @param builder The metrics data builder.
+     * @param responseTime response time
+     */
+    private void parseResponseByConfig(String resp, List<String> aliasFields, HttpProtocol http,
+                                       CollectRep.MetricsData.Builder builder, Long responseTime) {
+        if (!StringUtils.hasText(resp)) {
+            log.warn("Http collect parse type is config, but response body is empty.");
+            builder.setCode(CollectRep.Code.FAIL);
+            builder.setMsg("Response body is empty");
+            return;
+        }
+
+        Properties properties = new Properties();
+        try (StringReader reader = new StringReader(resp)) {
+            properties.load(reader);
+        } catch (IOException e) {
+            log.warn("Failed to parse config response: {}", e.getMessage(), e);
+            builder.setCode(CollectRep.Code.FAIL);
+            builder.setMsg("Failed to parse config response: " + e.getMessage());
+            return;
+        }
+        String arrayBasePath = http.getParseScript();
+        int keywordNum = CollectUtil.countMatchKeyword(resp, http.getKeyword());
+
+        if (!StringUtils.hasText(arrayBasePath)) {
+            CollectRep.ValueRow.Builder valueRowBuilder = CollectRep.ValueRow.newBuilder();
+            for (String alias : aliasFields) {
+                if (NetworkConstants.RESPONSE_TIME.equalsIgnoreCase(alias)) {
+                    valueRowBuilder.addColumn(responseTime.toString());
+                } else if (CollectorConstants.KEYWORD.equalsIgnoreCase(alias)) {
+                    valueRowBuilder.addColumn(Integer.toString(keywordNum));
+                } else {
+                    String value = properties.getProperty(alias);
+                    valueRowBuilder.addColumn(value != null ? value : CommonConstants.NULL_VALUE);
+                }
+            }
+            CollectRep.ValueRow valueRow = valueRowBuilder.build();
+            if (hasMeaningfulDataInRow(valueRow, aliasFields)) {
+                builder.addValueRow(valueRow);
+            } else {
+                log.warn("No meaningful data found in single config object response for aliasFields: {}", aliasFields);
+            }
+        } else {
+            Pattern pattern = Pattern.compile("^" + Pattern.quote(arrayBasePath) + "\\[(\\d+)]\\.");
+            Set<Integer> existingIndices = new HashSet<>();
+            for (String key : properties.stringPropertyNames()) {
+                Matcher matcher = pattern.matcher(key);
+                if (matcher.find()) {
+                    try {
+                        int index = Integer.parseInt(matcher.group(1));
+                        existingIndices.add(index);
+                    } catch (NumberFormatException e) {
+                        log.error("Could not parse index from key: {}", key);
+                    }
+                }
+            }
+            if (existingIndices.isEmpty()) {
+                log.warn("Could not find any array elements for base path '{}' in config response.", arrayBasePath);
+                return;
+            }
+            List<Integer> sortedIndices = new ArrayList<>(existingIndices);
+            Collections.sort(sortedIndices);
+            for (int i : sortedIndices) {
+                CollectRep.ValueRow.Builder valueRowBuilder = CollectRep.ValueRow.newBuilder();
+                for (String alias : aliasFields) {
+                    if (NetworkConstants.RESPONSE_TIME.equalsIgnoreCase(alias)) {
+                        valueRowBuilder.addColumn(responseTime.toString());
+                    } else if (CollectorConstants.KEYWORD.equalsIgnoreCase(alias)) {
+                        valueRowBuilder.addColumn(Integer.toString(keywordNum));
+                    } else {
+                        String currentKey = arrayBasePath + "[" + i + "]." + alias;
+                        String value = properties.getProperty(currentKey);
+                        valueRowBuilder.addColumn(value != null ? value : CommonConstants.NULL_VALUE);
+                    }
+                }
+                CollectRep.ValueRow valueRow = valueRowBuilder.build();
+                if (hasMeaningfulDataInRow(valueRow, aliasFields)) {
+                    builder.addValueRow(valueRowBuilder.build());
+                }
+            }
+        }
+    }
+
+    private boolean hasMeaningfulDataInRow(CollectRep.ValueRow valueRow, List<String> aliasFields) {
+        if (valueRow.getColumnsCount() == 0) {
+            return false;
+        }
+        if (valueRow.getColumnsCount() != aliasFields.size()) {
+            log.error("Column count ({}) mismatch with aliasFields size ({}) when checking meaningful data.",
+                    valueRow.getColumnsCount(), aliasFields.size());
+            return false;
+        }
+
+        boolean hasMeaningfulData = false;
+        for (int i = 0; i < valueRow.getColumnsCount(); i++) {
+            String columnValue = valueRow.getColumns(i);
+            String alias = aliasFields.get(i);
+            if (!CommonConstants.NULL_VALUE.equals(columnValue) && (!NetworkConstants.RESPONSE_TIME.equalsIgnoreCase(alias) && !CollectorConstants.KEYWORD.equalsIgnoreCase(alias))) {
+                hasMeaningfulData = true;
+                break;
+            }
+            if ((NetworkConstants.RESPONSE_TIME.equalsIgnoreCase(alias) || CollectorConstants.KEYWORD.equalsIgnoreCase(alias)) && !CommonConstants.NULL_VALUE.equals(columnValue)) {
+                hasMeaningfulData = true;
+            }
+        }
+        return hasMeaningfulData;
     }
 
     private void parseResponseByJsonPath(String resp, List<String> aliasFields, HttpProtocol http,
@@ -372,6 +692,18 @@ public class HttpCollectImpl extends AbstractCollect {
                     }
                 }
                 builder.addValueRow(valueRowBuilder.build());
+            } else if (objectValue instanceof Number numberValue) {
+                CollectRep.ValueRow.Builder valueRowBuilder = CollectRep.ValueRow.newBuilder();
+                for (String alias : aliasFields) {
+                    if (NetworkConstants.RESPONSE_TIME.equalsIgnoreCase(alias)) {
+                        valueRowBuilder.addColumn(responseTime.toString());
+                    } else if (CollectorConstants.KEYWORD.equalsIgnoreCase(alias)) {
+                        valueRowBuilder.addColumn(Integer.toString(keywordNum));
+                    } else {
+                        valueRowBuilder.addColumn(numberValue.toString());
+                    }
+                }
+                builder.addValueRow(valueRowBuilder.build());
             }
         }
     }
@@ -382,45 +714,35 @@ public class HttpCollectImpl extends AbstractCollect {
         prometheusParser.handle(resp, aliasFields, http, builder);
     }
 
-    private void parseResponseByPrometheusExporter(String resp, List<String> aliasFields,
-                                                   CollectRep.MetricsData.Builder builder) {
-        if (!EXPORTER_PARSER_TABLE.containsKey(builder.getId())) {
-            EXPORTER_PARSER_TABLE.put(builder.getId(), new ExporterParser());
-        }
-        ExporterParser parser = EXPORTER_PARSER_TABLE.get(builder.getId());
-        Map<String, MetricFamily> metricFamilyMap = parser.textToMetric(resp);
+    private void parseResponseByPrometheusExporter(InputStream content, List<String> aliasFields, CollectRep.MetricsData.Builder builder) throws IOException {
         String metrics = builder.getMetrics();
-        if (metricFamilyMap.containsKey(metrics)) {
-            MetricFamily metricFamily = metricFamilyMap.get(metrics);
-            for (MetricFamily.Metric metric : metricFamily.getMetricList()) {
-                Map<String, String> labelMap = metric.getLabelPair()
-                        .stream()
-                        .collect(Collectors.toMap(MetricFamily.Label::getName, MetricFamily.Label::getValue));
-                CollectRep.ValueRow.Builder valueRowBuilder = CollectRep.ValueRow.newBuilder();
-                for (String aliasField : aliasFields) {
-                    if ("value".equals(aliasField)) {
-                        if (metric.getCounter() != null) {
-                            valueRowBuilder.addColumn(String.valueOf(metric.getCounter().getValue()));
-                        } else if (metric.getGauge() != null) {
-                            valueRowBuilder.addColumn(String.valueOf(metric.getGauge().getValue()));
-                        } else if (metric.getUntyped() != null) {
-                            valueRowBuilder.addColumn(String.valueOf(metric.getUntyped().getValue()));
-                        } else if (metric.getInfo() != null) {
-                            valueRowBuilder.addColumn(String.valueOf(metric.getInfo().getValue()));
-                        } else if (metric.getSummary() != null) {
-                            valueRowBuilder.addColumn(String.valueOf(metric.getSummary().getValue()));
-                        } else if (metric.getHistogram() != null) {
-                            valueRowBuilder.addColumn(String.valueOf(metric.getHistogram().getValue()));
-                        }
-                    } else {
-                        String columnValue = labelMap.get(aliasField);
-                        valueRowBuilder.addColumn(columnValue == null ? CommonConstants.NULL_VALUE : columnValue);
-                    }
+        Map<String, MetricFamily> metricFamilyMap = OnlineParser.parseMetrics(content, metrics);
+        if (metricFamilyMap == null || metricFamilyMap.isEmpty()) {
+            return;
+        }
+        MetricFamily metricFamily = metricFamilyMap.get(metrics);
+        if (null == metricFamily || CollectionUtils.isEmpty(metricFamily.getMetricList())) {
+            return;
+        }
+        for (MetricFamily.Metric metric : metricFamily.getMetricList()) {
+            Map<String, String> labelMap = metric.getLabels()
+                    .stream()
+                    .collect(Collectors.toMap(MetricFamily.Label::getName, MetricFamily.Label::getValue));
+            CollectRep.ValueRow.Builder valueRowBuilder = CollectRep.ValueRow.newBuilder();
+            for (String aliasField : aliasFields) {
+                String columnValue = labelMap.get(aliasField);
+                if (columnValue != null) {
+                    valueRowBuilder.addColumn(columnValue);
+                } else if (CommonConstants.PROM_VALUE.equals(aliasField) || CommonConstants.PROM_METRIC_VALUE.equals(aliasField)) {
+                    valueRowBuilder.addColumn(String.valueOf(metric.getValue()));
+                } else {
+                    valueRowBuilder.addColumn(CommonConstants.NULL_VALUE);
                 }
-                builder.addValueRow(valueRowBuilder.build());
             }
+            builder.addValueRow(valueRowBuilder.build());
         }
     }
+
 
     private void parseResponseByDefault(String resp, List<String> aliasFields, HttpProtocol http,
                                         CollectRep.MetricsData.Builder builder, Long responseTime) {
@@ -468,11 +790,10 @@ public class HttpCollectImpl extends AbstractCollect {
                 CredentialsProvider provider = new BasicCredentialsProvider();
                 UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(auth.getDigestAuthUsername(),
                         auth.getDigestAuthPassword());
-                provider.setCredentials(AuthScope.ANY, credentials);
-                AuthCache authCache = new BasicAuthCache();
-                authCache.put(new HttpHost(httpProtocol.getHost(), Integer.parseInt(httpProtocol.getPort())), new DigestScheme());
+                AuthScope authScope = new AuthScope(httpProtocol.getHost(), Integer.parseInt(httpProtocol.getPort()));
+                provider.setCredentials(authScope, credentials);
+
                 clientContext.setCredentialsProvider(provider);
-                clientContext.setAuthCache(authCache);
                 return clientContext;
             }
         }
@@ -505,13 +826,37 @@ public class HttpCollectImpl extends AbstractCollect {
         }
         // params
         Map<String, String> params = httpProtocol.getParams();
+        boolean enableUrlEncoding = Boolean.parseBoolean(httpProtocol.getEnableUrlEncoding());
+        StringBuilder queryParams = new StringBuilder();
+
         if (params != null && !params.isEmpty()) {
             for (Map.Entry<String, String> param : params.entrySet()) {
-                if (StringUtils.hasText(param.getValue())) {
-                    requestBuilder.addParameter(param.getKey(), TimeExpressionUtil.calculate(param.getValue()));
+                String key = param.getKey();
+                String value = param.getValue();
+
+                if (!StringUtils.hasText(key)) {
+                    continue;
+                }
+
+                if (!queryParams.isEmpty()) {
+                    queryParams.append("&");
+                }
+
+                if (enableUrlEncoding) {
+                    key = UriUtils.encodeQueryParam(key, "UTF-8");
+                }
+                queryParams.append(key);
+
+                if (StringUtils.hasText(value)) {
+                    String calculatedValue = TimeExpressionUtil.calculate(value);
+                    if (enableUrlEncoding) {
+                        calculatedValue = UriUtils.encodeQueryParam(calculatedValue, "UTF-8");
+                    }
+                    queryParams.append("=").append(calculatedValue);
                 }
             }
         }
+
         // The default request header can be overridden if customized
         // keep-alive
         requestBuilder.addHeader(HttpHeaders.CONNECTION, NetworkConstants.KEEP_ALIVE);
@@ -521,8 +866,7 @@ public class HttpCollectImpl extends AbstractCollect {
         if (headers != null && !headers.isEmpty()) {
             for (Map.Entry<String, String> header : headers.entrySet()) {
                 if (StringUtils.hasText(header.getValue())) {
-                    requestBuilder.addHeader(CollectUtil.replaceUriSpecialChar(header.getKey()),
-                            CollectUtil.replaceUriSpecialChar(header.getValue()));
+                    requestBuilder.addHeader(header.getKey(), header.getValue());
                 }
             }
         }
@@ -545,7 +889,7 @@ public class HttpCollectImpl extends AbstractCollect {
                 if (StringUtils.hasText(authorization.getBasicAuthUsername())
                         && StringUtils.hasText(authorization.getBasicAuthPassword())) {
                     String authStr = authorization.getBasicAuthUsername() + SignConstants.DOUBLE_MARK + authorization.getBasicAuthPassword();
-                    String encodedAuth = new String(Base64.encodeBase64(authStr.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
+                    String encodedAuth = Base64Util.encode(authStr);
                     requestBuilder.addHeader(HttpHeaders.AUTHORIZATION, DispatchConstants.BASIC + SignConstants.BLANK + encodedAuth);
                 }
             }
@@ -553,14 +897,32 @@ public class HttpCollectImpl extends AbstractCollect {
 
         // if it has payload, would override post params
         if (StringUtils.hasLength(httpProtocol.getPayload()) && (HttpMethod.POST.matches(httpMethod) || HttpMethod.PUT.matches(httpMethod))) {
-            requestBuilder.setEntity(new StringEntity(httpProtocol.getPayload(), StandardCharsets.UTF_8));
+            requestBuilder.setEntity(new StringEntity(TimeExpressionUtil.calculate(httpProtocol.getPayload()), StandardCharsets.UTF_8));
         }
 
-        // uri
-        String uri = CollectUtil.replaceUriSpecialChar(httpProtocol.getUrl());
-        if (IpDomainUtil.isHasSchema(httpProtocol.getHost())) {
+        // uri encode
+        String uri;
+        if (enableUrlEncoding) {
+            // if the url contains parameters directly
+            if (httpProtocol.getUrl().contains("?")) {
+                String path = httpProtocol.getUrl().substring(0, httpProtocol.getUrl().indexOf("?"));
+                String query = httpProtocol.getUrl().substring(httpProtocol.getUrl().indexOf("?") + 1);
+                uri = UriUtils.encodePath(path, "UTF-8") + "?" + UriUtils.encodeQuery(query, "UTF-8");
+            } else {
+                uri = UriUtils.encodePath(httpProtocol.getUrl(), "UTF-8");
+            }
+        } else {
+            uri = httpProtocol.getUrl();
+        }
 
-            requestBuilder.setUri(httpProtocol.getHost() + ":" + httpProtocol.getPort() + uri);
+        // append query params
+        if (!queryParams.isEmpty()) {
+            uri += (uri.contains("?") ? "&" : "?") + queryParams;
+        }
+
+        String finalUri;
+        if (IpDomainUtil.isHasSchema(httpProtocol.getHost())) {
+            finalUri = httpProtocol.getHost() + ":" + httpProtocol.getPort() + uri;
         } else {
             String ipAddressType = IpDomainUtil.checkIpAddressType(httpProtocol.getHost());
             String baseUri = NetworkConstants.IPV6.equals(ipAddressType)
@@ -568,10 +930,17 @@ public class HttpCollectImpl extends AbstractCollect {
                     : String.format("%s:%s%s", httpProtocol.getHost(), httpProtocol.getPort(), uri);
             boolean ssl = Boolean.parseBoolean(httpProtocol.getSsl());
             if (ssl) {
-                requestBuilder.setUri(NetworkConstants.HTTPS_HEADER + baseUri);
+                finalUri = NetworkConstants.HTTPS_HEADER + baseUri;
             } else {
-                requestBuilder.setUri(NetworkConstants.HTTP_HEADER + baseUri);
+                finalUri = NetworkConstants.HTTP_HEADER + baseUri;
             }
+        }
+
+        try {
+            requestBuilder.setUri(finalUri);
+        } catch (IllegalArgumentException e) {
+            log.warn("Invalid URI with illegal characters: {}. User has disabled URL encoding, not applying any encoding.", finalUri);
+            throw e;
         }
 
         // custom timeout

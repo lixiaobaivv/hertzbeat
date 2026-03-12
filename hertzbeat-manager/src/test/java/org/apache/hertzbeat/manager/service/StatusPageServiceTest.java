@@ -18,11 +18,15 @@
 package org.apache.hertzbeat.manager.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
 import java.util.List;
+
 import org.apache.hertzbeat.common.entity.manager.StatusPageComponent;
 import org.apache.hertzbeat.common.entity.manager.StatusPageIncident;
 import org.apache.hertzbeat.common.entity.manager.StatusPageOrg;
@@ -32,13 +36,18 @@ import org.apache.hertzbeat.manager.dao.StatusPageHistoryDao;
 import org.apache.hertzbeat.manager.dao.StatusPageIncidentComponentBindDao;
 import org.apache.hertzbeat.manager.dao.StatusPageIncidentDao;
 import org.apache.hertzbeat.manager.dao.StatusPageOrgDao;
+import org.apache.hertzbeat.manager.pojo.dto.StatusPageComponentInfo;
+import org.apache.hertzbeat.manager.pojo.dto.StatusPageIncidentInfo;
+import org.apache.hertzbeat.manager.pojo.dto.StatusPageOrgInfo;
 import org.apache.hertzbeat.manager.service.impl.StatusPageServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
 
 /**
  * test case for {@link StatusPageServiceImpl}
@@ -79,20 +88,20 @@ class StatusPageServiceTest {
         StatusPageOrg expectedOrg = new StatusPageOrg();
         when(statusPageOrgDao.findAll()).thenReturn(List.of(expectedOrg));
 
-        StatusPageOrg actualOrg = statusPageService.queryStatusPageOrg();
+        StatusPageOrgInfo actualOrg = statusPageService.queryStatusPageOrg();
 
-        assertEquals(expectedOrg, actualOrg);
+        assertEquals(expectedOrg.getId(), actualOrg.getId());
     }
 
     @Test
     void testSaveStatusPageOrg() {
 
         StatusPageOrg inputOrg = new StatusPageOrg();
-        when(statusPageOrgDao.save(inputOrg)).thenReturn(inputOrg);
+        when(statusPageOrgDao.save(any(StatusPageOrg.class))).thenReturn(inputOrg);
 
-        StatusPageOrg savedOrg = statusPageService.saveStatusPageOrg(inputOrg);
+        StatusPageOrgInfo savedOrg = statusPageService.saveStatusPageOrg(StatusPageOrgInfo.fromEntity(inputOrg));
 
-        assertEquals(inputOrg, savedOrg);
+        assertEquals(inputOrg.getId(), savedOrg.getId());
     }
 
     @Test
@@ -101,44 +110,39 @@ class StatusPageServiceTest {
         StatusPageComponent component = new StatusPageComponent();
         when(statusPageComponentDao.findAll()).thenReturn(List.of(component));
 
-        List<StatusPageComponent> components = statusPageService.queryStatusPageComponents();
+        List<StatusPageComponentInfo> components = statusPageService.queryStatusPageComponents();
 
         assertEquals(1, components.size());
-        assertEquals(component, components.get(0));
+        assertEquals(component.getId(), components.get(0).getId());
     }
 
     @Test
     void testSaveStatusPageComponent() {
 
         StatusPageComponent component = new StatusPageComponent();
-        when(statusPageComponentDao.save(component)).thenReturn(component);
+        when(statusPageComponentDao.save(any(StatusPageComponent.class))).thenReturn(component);
 
-        statusPageService.newStatusPageComponent(component);
+        statusPageService.newStatusPageComponent(StatusPageComponentInfo.fromEntity(component));
 
-        verify(statusPageComponentDao, times(1)).save(component);
+        verify(statusPageComponentDao, times(1)).save(any(StatusPageComponent.class));
     }
 
     @Test
     void testQueryStatusPageIncidents() {
 
-        StatusPageIncident incident = new StatusPageIncident();
-        when(statusPageIncidentDao.findAll(Sort.by(Sort.Direction.DESC, "startTime"))).thenReturn(List.of(incident));
-
-        List<StatusPageIncident> incidents = statusPageService.queryStatusPageIncidents();
-
-        assertEquals(1, incidents.size());
-        assertEquals(incident, incidents.get(0));
+        when(statusPageIncidentDao.findAll(any(Specification.class), any(PageRequest.class))).thenReturn(Page.empty());
+        assertNotNull(statusPageService.queryStatusPageIncidents(null, null, null, 1, 10));
     }
 
     @Test
     void testSaveStatusPageIncident() {
 
         StatusPageIncident incident = new StatusPageIncident();
-        when(statusPageIncidentDao.save(incident)).thenReturn(incident);
+        when(statusPageIncidentDao.save(any(StatusPageIncident.class))).thenReturn(incident);
 
-        statusPageService.newStatusPageIncident(incident);
+        statusPageService.newStatusPageIncident(StatusPageIncidentInfo.fromEntity(incident));
 
-        verify(statusPageIncidentDao, times(1)).save(incident);
+        verify(statusPageIncidentDao, times(1)).save(any(StatusPageIncident.class));
     }
 
     @Test

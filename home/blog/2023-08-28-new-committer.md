@@ -3,7 +3,6 @@ title: Welcome to HertzBeat Community Committer!
 author: tom  
 author_title: tom   
 author_url: https://github.com/tomsun28  
-author_image_url: https://avatars.githubusercontent.com/u/24788200?s=400&v=4  
 tags: [opensource, practice]
 keywords: [open source monitoring system, alerting system]
 ---
@@ -85,6 +84,6 @@ HertzBeat HertzBeat is an open source real-time monitoring and alerting system w
 
 > `HertzBeat`'s powerful customization, multi-type support, high performance, easy to extend, low-coupling, and hopefully can help developers and teams to quickly build their own monitoring system.
 
-Github: <https://github.com/apache/hertzbeat>
+Github: [https://github.com/apache/hertzbeat](https://github.com/apache/hertzbeat)
 
 More users are welcome to participate in `HertzBeat` open source collaboration, no matter a typo or punctuation we are very welcome.

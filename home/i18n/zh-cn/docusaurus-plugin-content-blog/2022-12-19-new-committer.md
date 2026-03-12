@@ -3,7 +3,6 @@ title: 恭喜 HertzBeat 迎来了两位新晋社区Committer
 author: tom  
 author_title: tom   
 author_url: https://github.com/tomsun28  
-author_image_url: https://avatars.githubusercontent.com/u/24788200?s=400&v=4  
 tags: [opensource]
 ---
 
@@ -57,7 +56,7 @@ github：[wang1027-wqh](https://github.com/wang1027-wqh)
 
 现从事：某互联网公司Java开发工程师
 
-email：<1758619238@qq.com>
+email：[1758619238@qq.com](mailto:1758619238@qq.com)
 
 Hertzbeat Committer
 
@@ -98,7 +97,7 @@ github：[Ceilzcx (zcx) (github.com)](https://github.com/Ceilzcx)
 
 ### 如何参与Hertzbeat
 
-+ 官网有非常完善的贡献者指南：[贡献者指南 | HertzBeat](https://hertzbeat.com/docs/community/contribution)
++ 官网有非常完善的贡献者指南：[贡献者指南 | HertzBeat](https://hertzbeat.apache.org/docs/community/contribution)
 
 + Github issues：[Issues · apache/hertzbeat (github.com)](https://github.com/apache/hertzbeat/issues)
 

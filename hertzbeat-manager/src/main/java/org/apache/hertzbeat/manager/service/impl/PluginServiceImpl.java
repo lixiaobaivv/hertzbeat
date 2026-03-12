@@ -17,6 +17,7 @@
 
 package org.apache.hertzbeat.manager.service.impl;
 
+import jakarta.annotation.PostConstruct;
 import jakarta.persistence.criteria.Predicate;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -45,14 +46,12 @@ import java.util.function.Consumer;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.stream.Collectors;
-import javax.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.hertzbeat.common.constants.PluginType;
-import org.apache.hertzbeat.common.entity.dto.PluginUpload;
 import org.apache.hertzbeat.common.entity.job.Configmap;
 import org.apache.hertzbeat.common.entity.manager.PluginItem;
 import org.apache.hertzbeat.common.entity.manager.PluginMetadata;
@@ -62,6 +61,8 @@ import org.apache.hertzbeat.common.support.exception.CommonException;
 import org.apache.hertzbeat.manager.dao.PluginItemDao;
 import org.apache.hertzbeat.manager.dao.PluginMetadataDao;
 import org.apache.hertzbeat.manager.dao.PluginParamDao;
+import org.apache.hertzbeat.manager.pojo.dto.ParamDefineInfo;
+import org.apache.hertzbeat.manager.pojo.dto.PluginUpload;
 import org.apache.hertzbeat.manager.pojo.dto.PluginParam;
 import org.apache.hertzbeat.manager.pojo.dto.PluginParametersVO;
 import org.apache.hertzbeat.manager.service.PluginService;
@@ -180,7 +181,8 @@ public class PluginServiceImpl implements PluginService {
         if (PARAMS_CONFIG_MAP.containsKey(pluginMetadataId)) {
             PluginConfig config = PARAMS_CONFIG_MAP.get(pluginMetadataId);
             List<PluginParam> paramsByPluginMetadataId = pluginParamDao.findParamsByPluginMetadataId(pluginMetadataId);
-            pluginParametersVO.setParamDefines(Optional.ofNullable(config).map(PluginConfig::getParams).orElse(new ArrayList<>()));
+            pluginParametersVO.setParamDefines(Optional.ofNullable(config).map(PluginConfig::getParams)
+                    .orElse(new ArrayList<>()).stream().map(ParamDefineInfo::fromRuntime).toList());
             pluginParametersVO.setPluginParams(paramsByPluginMetadataId);
             return pluginParametersVO;
         }
@@ -224,7 +226,9 @@ public class PluginServiceImpl implements PluginService {
         List<PluginItem> pluginItems = new ArrayList<>();
         AtomicInteger pluginImplementationCount = new AtomicInteger(0);
         try {
+            validateFilePath(jarFile);
             URL jarUrl = new URL("file:" + jarFile.getAbsolutePath());
+            validateJarUrl(jarUrl);
             try (URLClassLoader classLoader = new URLClassLoader(new URL[]{jarUrl}, this.getClass().getClassLoader());
                 JarFile jar = new JarFile(jarFile)) {
                 Enumeration<JarEntry> entries = jar.entries();
@@ -272,6 +276,35 @@ public class PluginServiceImpl implements PluginService {
         return metadata;
     }
 
+    /**
+     * Validate that the file resides within the expected directory.
+     *
+     * @param file the file to validate
+     */
+    private void validateFilePath(File file) {
+        try {
+            String canonicalPath = file.getCanonicalPath();
+            String expectedDir = new File("plugin-lib").getCanonicalPath();
+            if (!canonicalPath.startsWith(expectedDir)) {
+                throw new CommonException("File is outside the allowed directory: " + canonicalPath);
+            }
+        } catch (IOException e) {
+            log.error("Error validating file path: {}", file.getAbsolutePath(), e);
+            throw new CommonException("Error validating file path: " + file.getAbsolutePath());
+        }
+    }
+
+    /**
+     * Validate that the URL uses the 'file:' protocol and does not point to an external resource.
+     *
+     * @param url the URL to validate
+     */
+    private void validateJarUrl(URL url) {
+        if (!"file".equals(url.getProtocol())) {
+            throw new CommonException("Invalid URL protocol: " + url.getProtocol());
+        }
+    }
+
     private void validateMetadata(PluginMetadata metadata) {
         if (metadataDao.countPluginMetadataByName(metadata.getName()) != 0) {
             throw new CommonException("A plugin named " + metadata.getName() + " already exists");
@@ -285,11 +318,8 @@ public class PluginServiceImpl implements PluginService {
         String jarPath = new File(this.getClass().getProtectionDomain().getCodeSource().getLocation().getPath()).getAbsolutePath();
         Path extLibPath = Paths.get(new File(jarPath).getParent(), "plugin-lib");
         File extLibDir = extLibPath.toFile();
-
         String fileName = pluginUpload.getJarFile().getOriginalFilename();
-        if (fileName == null) {
-            throw new CommonException("Failed to upload plugin");
-        }
+        validateFileName(fileName);
         fileName = UUID.randomUUID().toString().replace("-", "") + "_" + fileName;
         File destFile = new File(extLibDir, fileName);
         FileUtils.createParentDirectories(destFile);
@@ -319,6 +349,20 @@ public class PluginServiceImpl implements PluginService {
         loadJarToClassLoader();
         // sync enabled status
         syncPluginStatus();
+    }
+
+    /**
+     * validate file name if file name is invalid, throw exception
+     *
+     * @param fileName file name
+     */
+    private void validateFileName(String fileName) {
+        if (fileName == null) {
+            throw new CommonException("Failed to upload plugin");
+        }
+        if (fileName.matches(".*(\\.\\.|[\n\t\r/\\\\]).*")) {
+            throw new CommonException("Invalid plugin file name: " + fileName);
+        }
     }
 
     @Override
@@ -369,7 +413,7 @@ public class PluginServiceImpl implements PluginService {
     }
 
     private void syncSinglePluginStatus(PluginMetadata plugin) {
-        if (plugin == null || CollectionUtils.isEmpty(plugin.getItems())){
+        if (plugin == null || CollectionUtils.isEmpty(plugin.getItems())) {
             return;
         }
         for (PluginItem item : plugin.getItems()) {

@@ -17,12 +17,11 @@
 
 package org.apache.hertzbeat.manager.service.impl;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.type.TypeReference;
 import jakarta.annotation.Resource;
 import java.lang.reflect.Type;
 import org.apache.hertzbeat.common.constants.GeneralConfigTypeEnum;
-import org.apache.hertzbeat.manager.dao.GeneralConfigDao;
+import org.apache.hertzbeat.base.dao.GeneralConfigDao;
 import org.apache.hertzbeat.manager.pojo.dto.TemplateConfig;
 import org.apache.hertzbeat.manager.service.AppService;
 import org.springframework.stereotype.Service;
@@ -32,33 +31,26 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class TemplateConfigServiceImpl extends AbstractGeneralConfigServiceImpl<TemplateConfig> {
-    
+
     @Resource
     private AppService appService;
 
-    /**
-     *
-     * <p>Constructor, passing in GeneralConfigDao, ObjectMapper and type.</p>
-     *
-     * @param generalConfigDao configDao object
-     * @param objectMapper     JSON tool object
-     */
-    public TemplateConfigServiceImpl(GeneralConfigDao generalConfigDao, ObjectMapper objectMapper) {
-        super(generalConfigDao, objectMapper);
+    public TemplateConfigServiceImpl(GeneralConfigDao generalConfigDao) {
+        super(generalConfigDao);
     }
-    
+
     @Override
     public void handler(TemplateConfig templateConfig) {
         if (templateConfig != null) {
             appService.updateCustomTemplateConfig(templateConfig);
         }
     }
-    
+
     @Override
     public String type() {
         return GeneralConfigTypeEnum.template.name();
     }
-    
+
     @Override
     protected TypeReference<TemplateConfig> getTypeReference() {
         return new TypeReference<>() {

@@ -23,33 +23,25 @@
             {
               "type": "category",
               "label": "extern-deploy",
-              "items": [
-                "start/baota-deploy",
-                "start/rainbond-deploy"
-              ]
+              "items": ["start/baota-deploy", "start/rainbond-deploy"]
             }
           ]
         },
         {
           "type": "category",
           "label": "upgrade",
-          "items": [
-            "start/1.6.0-update",
-            "start/upgrade"
-          ]
+          "items": ["start/1.7.0-update", "start/1.6.0-update", "start/upgrade"]
         },
         {
           "type": "category",
           "label": "setting",
-          "items": [
-            "start/account-modify",
-            "start/custom-config"
-          ]
+          "items": ["start/account-modify", "start/custom-config"]
         },
         {
           "type": "category",
           "label": "change-db",
           "items": [
+            "start/greptime-init",
             "start/victoria-metrics-init",
             "start/iotdb-init",
             "start/influxdb-init",
@@ -59,9 +51,12 @@
         },
         {
           "type": "category",
-          "label": "use-case",
+          "label": "Use Case",
+          "key": "quickstart-use-case",
           "items": [
-            "start/ssl-cert-practice"
+            "start/usecase/ssl-cert-practice",
+            "start/usecase/springboot-auto-practice",
+            "start/usecase/linux-os-practice"
           ]
         }
       ]
@@ -72,6 +67,74 @@
       "items": [
         "help/guide",
         "help/security_model",
+        "help/ai_agent",
+        "help/mcp_server",
+        {
+          "type": "category",
+          "label": "Use Case",
+          "key": "guides-use-case",
+          "items": [
+            "start/usecase/ssl-cert-practice",
+            "start/usecase/springboot-auto-practice",
+            "start/usecase/linux-os-practice",
+            "start/usecase/tdengine-practice"
+          ]
+        },
+        {
+          "type": "category",
+          "label": "Log (Beta)",
+          "key": "log",
+          "items": [
+            "help/log_integration",
+            "help/log_stream",
+            "help/log_manage"
+          ]
+        },
+        {
+          "type": "category",
+          "label": "alert",
+          "items": [
+            "help/alarm_center",
+            "help/alert_threshold",
+            "help/alert_threshold_expr",
+            "help/alarm_group",
+            "help/alarm_inhibit",
+            "help/alarm_silence",
+            "help/alert_integration"
+          ]
+        },
+        {
+          "type": "category",
+          "label": "notice",
+          "items": [
+            "help/alert_email",
+            "help/alert_sms",
+            "help/alert_webhook",
+            "help/alert_discord",
+            "help/alert_slack",
+            "help/alert_telegram",
+            "help/alert_wework",
+            "help/alert_dingtalk",
+            "help/alert_feishu",
+            "help/alert_feishu_app",
+            "help/alert_console",
+            "help/alert_enterprise_wechat_app",
+            "help/alert_smn",
+            "help/alert_notification_template"
+          ]
+        },
+        {
+          "type": "category",
+          "label": "service-discovery",
+          "items": [
+            "help/eureka_sd",
+            "help/nacos_sd",
+            "help/consul_sd",
+            "help/zookeeper_sd",
+            "help/http_sd",
+            "help/dns_sd"
+          ]
+        },
         {
           "type": "category",
           "label": "service",
@@ -93,7 +156,8 @@
             "help/ftp",
             "help/websocket",
             "help/mqtt",
-            "help/modbus"
+            "help/modbus",
+            "help/jenkins"
           ]
         },
         {
@@ -126,17 +190,14 @@
             "help/tidb",
             "help/mongodb",
             "help/mongodb_atlas",
-            "help/oceanbase"
+            "help/oceanbase",
+            "help/db2"
           ]
         },
         {
           "type": "category",
           "label": "cache",
-          "items": [
-            "help/redis",
-            "help/memcached",
-            "help/valkey"
-          ]
+          "items": ["help/redis", "help/memcached", "help/valkey"]
         },
         {
           "type": "category",
@@ -153,8 +214,24 @@
             "help/redhat",
             "help/rockylinux",
             "help/euleros",
+            "help/fedora",
             "help/linux_script",
-            "help/windows_script"
+            "help/windows_script",
+            "help/macos",
+            "help/darwin",
+            "help/nvidia"
+          ]
+        },
+        {
+          "type": "category",
+          "label": "server",
+          "items": [
+            "help/ipmi",
+            "help/hikvision_isapi",
+            "help/dahua",
+            "help/uniview",
+            "help/synology_nas",
+            "help/idrac"
           ]
         },
         {
@@ -170,7 +247,8 @@
             "help/rocketmq",
             "help/shenyu",
             "help/spring_gateway",
-            "help/zookeeper"
+            "help/zookeeper",
+            "help/apollo"
           ]
         },
         {
@@ -189,6 +267,8 @@
             "help/clickhouse",
             "help/doris_be",
             "help/doris_fe",
+            "help/starrocks_be",
+            "help/starrocks_fe",
             "help/elasticsearch",
             "help/flink",
             "help/flink_on_yarn",
@@ -197,89 +277,50 @@
             "help/presto",
             "help/seatunnel",
             "help/spark",
-            "help/yarn"
+            "help/yarn",
+            "help/dolphinscheduler"
           ]
         },
         {
           "type": "category",
           "label": "webserver",
-          "items": [
-            "help/tomcat",
-            "help/jetty"
-          ]
+          "items": ["help/tomcat", "help/jetty"]
         },
         {
           "type": "category",
           "label": "cloud-native",
-          "items": [
-            "help/docker",
-            "help/kubernetes"
-          ]
+          "items": ["help/docker", "help/kubernetes"]
         },
         {
           "type": "category",
           "label": "llm",
-          "items": [
-            "help/openai"
-          ]
-        },
-        {
-          "type": "category",
-          "label": "aiConfig",
-          "items": [
-            "help/aiConfig"
-          ]
-        },
-        {
-          "type": "category",
-          "label": "custom",
-          "items": [
-            "help/kafka_promql",
-            "help/influxdb_promql"
-          ]
+          "items": ["help/openai","help/deepseek","help/ollama"]
         },
         {
           "type": "category",
           "label": "network",
-          "items": [
-            "help/huawei_switch"
-          ]
+          "items": ["help/huawei_switch"]
         },
         {
           "type": "category",
-          "label": "threshold",
-          "items": [
-            "help/alert_threshold",
-            "help/alert_threshold_expr"
-          ]
+          "label": "Custom",
+          "key": "help-custom",
+          "items": ["help/kafka_promql", "help/influxdb_promql", "help/tdengine_promql"]
         },
-        {
-          "type": "category",
-          "label": "notice",
-          "items": [
-            "help/alert_email",
-            "help/alert_webhook",
-            "help/alert_discord",
-            "help/alert_slack",
-            "help/alert_telegram",
-            "help/alert_wework",
-            "help/alert_dingtalk",
-            "help/alert_feishu",
-            "help/alert_console",
-            "help/alert_enterprise_wechat_app",
-            "help/alert_smn"
-          ]
-        },
+        "help/status",
         "help/bulletin",
         "help/plugin",
         "help/time_expression",
         "help/grafana_dashboard",
+        "help/collector",
+        "help/risc-v",
         "help/issue"
       ]
     },
     {
       "type": "category",
-      "label": "custom",
+      "label": "Custom",
+      "key": "advanced-custom",
       "items": [
         "advanced/extend-point",
         "advanced/extend-tutorial",
@@ -290,6 +331,7 @@
             "advanced/extend-http",
             "advanced/extend-http-default",
             "advanced/extend-http-jsonpath",
+            "advanced/extend-http-xmlpath",
             "advanced/extend-http-example-hertzbeat",
             "advanced/extend-http-example-token"
           ]
@@ -297,44 +339,32 @@
         {
           "type": "category",
           "label": "jdbc",
-          "items": [
-            "advanced/extend-jdbc"
-          ]
+          "items": ["advanced/extend-jdbc"]
         },
         {
           "type": "category",
           "label": "ssh",
-          "items": [
-            "advanced/extend-ssh"
-          ]
+          "items": ["advanced/extend-ssh"]
         },
         {
           "type": "category",
           "label": "telnet",
-          "items": [
-            "advanced/extend-telnet"
-          ]
+          "items": ["advanced/extend-telnet"]
         },
         {
           "type": "category",
           "label": "jmx",
-          "items": [
-            "advanced/extend-jmx"
-          ]
+          "items": ["advanced/extend-jmx"]
         },
         {
           "type": "category",
           "label": "snmp",
-          "items": [
-            "advanced/extend-snmp"
-          ]
+          "items": ["advanced/extend-snmp"]
         },
         {
           "type": "category",
           "label": "NGQL",
-          "items": [
-            "advanced/extend-ngql"
-          ]
+          "items": ["advanced/extend-ngql"]
         }
       ]
     },
@@ -346,6 +376,7 @@
       "type": "category",
       "label": "Community",
       "items": [
+        "community/maturity",
         "community/contact",
         "community/development",
         {
@@ -379,13 +410,11 @@
         }
       ]
     },
+
     {
       "type": "category",
       "label": "Others",
-      "items": [
-        "others/resource"
-      ]
+      "items": ["others/resource"]
     }
   ]
 }
-

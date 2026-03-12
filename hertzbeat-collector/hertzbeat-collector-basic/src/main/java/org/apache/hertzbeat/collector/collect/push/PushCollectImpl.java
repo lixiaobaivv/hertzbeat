@@ -17,7 +17,6 @@
 
 package org.apache.hertzbeat.collector.collect.push;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,6 +47,7 @@ import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 import org.springframework.http.MediaType;
+import tools.jackson.core.type.TypeReference;
 
 /**
  * push style collect
@@ -58,13 +58,13 @@ public class PushCollectImpl extends AbstractCollect {
     private static final Map<Long, Long> timeMap = new ConcurrentHashMap<>();
 
     // ms
-    private static final Integer timeout = 3000;
+    private static final Integer DEFAULT_TIMEOUT = 3000;
 
     private static final Integer SUCCESS_CODE = 200;
 
     // It's hard to determine how long ago the first data collection was, because there's no way to know when the last collection occurred.
     // This makes it difficult to avoid re-collecting data after a restart. The default is 30 seconds
-    private static final Integer firstCollectInterval = 30000;
+    private static final Integer FIRST_COLLECT_INTERVAL = 30000;
 
     @Override
     public void preCheck(Metrics metrics) throws IllegalArgumentException {
@@ -80,14 +80,13 @@ public class PushCollectImpl extends AbstractCollect {
         long monitorId = builder.getId();
         PushProtocol pushProtocol = metrics.getPush();
 
-        Long time = timeMap.getOrDefault(monitorId, curTime - firstCollectInterval);
+        Long time = timeMap.getOrDefault(monitorId, curTime - FIRST_COLLECT_INTERVAL);
         timeMap.put(monitorId, curTime);
 
         HttpContext httpContext = createHttpContext(pushProtocol);
         HttpUriRequest request = createHttpRequest(pushProtocol, monitorId, time);
 
-        try {
-            CloseableHttpResponse response = CommonHttpClient.getHttpClient().execute(request, httpContext);
+        try (CloseableHttpResponse response = CommonHttpClient.getHttpClient().execute(request, httpContext)) {
             int statusCode = response.getStatusLine().getStatusCode();
             if (statusCode != SUCCESS_CODE) {
                 builder.setCode(CollectRep.Code.FAIL);
@@ -146,10 +145,10 @@ public class PushCollectImpl extends AbstractCollect {
 
         //requestBuilder.setUri(pushProtocol.getUri());
 
-        if (timeout > 0) {
+        if (DEFAULT_TIMEOUT > 0) {
             RequestConfig requestConfig = RequestConfig.custom()
-                    .setConnectTimeout(timeout)
-                    .setSocketTimeout(timeout)
+                    .setConnectTimeout(DEFAULT_TIMEOUT)
+                    .setSocketTimeout(DEFAULT_TIMEOUT)
                     .setRedirectsEnabled(true)
                     .build();
             requestBuilder.setConfig(requestConfig);

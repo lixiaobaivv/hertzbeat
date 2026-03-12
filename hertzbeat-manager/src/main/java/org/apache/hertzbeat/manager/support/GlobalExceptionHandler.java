@@ -22,11 +22,11 @@ import static org.apache.hertzbeat.common.constants.CommonConstants.FAIL_CODE;
 import static org.apache.hertzbeat.common.constants.CommonConstants.MONITOR_CONFLICT_CODE;
 import static org.apache.hertzbeat.common.constants.CommonConstants.PARAM_INVALID_CODE;
 import java.util.Objects;
-import javax.validation.ConstraintViolationException;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hertzbeat.common.entity.dto.Message;
 import org.apache.hertzbeat.common.support.exception.CommonException;
-import org.apache.hertzbeat.manager.support.exception.AlertNoticeException;
+import org.apache.hertzbeat.alert.notice.AlertNoticeException;
 import org.apache.hertzbeat.manager.support.exception.MonitorDatabaseException;
 import org.apache.hertzbeat.manager.support.exception.MonitorDetectException;
 import org.apache.hertzbeat.manager.support.exception.MonitorMetricsException;
@@ -86,7 +86,7 @@ public class GlobalExceptionHandler {
         Message<Void> message = Message.fail(FAIL_CODE, exception.getMessage());
         return ResponseEntity.ok(message);
     }
-    
+
     /**
      * processing parameter error
      * @param exception parameter exception
@@ -232,6 +232,23 @@ public class GlobalExceptionHandler {
         return ResponseEntity.ok(message);
     }
 
+    /**
+     * handle unsupported operation exception
+     * @param exception UnsupportedOperationException
+     * @return response
+     */
+    @ExceptionHandler(UnsupportedOperationException.class)
+    @ResponseBody
+    ResponseEntity<Message<Void>> handleUnsupportedOperationException(UnsupportedOperationException exception) {
+        String errorMessage = "operation not supported";
+        if (exception != null && exception.getMessage() != null) {
+            errorMessage = exception.getMessage();
+        }
+        log.warn("[unsupported operation]-{}", errorMessage, exception);
+        Message<Void> message = Message.fail(FAIL_CODE, errorMessage);
+        return ResponseEntity.ok(message);
+    }
+
     @ExceptionHandler(NoResourceFoundException.class)
     void ignoreNoResourceFoundException(Exception ex) throws Exception {
         throw ex;
@@ -251,6 +268,6 @@ public class GlobalExceptionHandler {
         }
         log.error("[monitor]-[unknown error happen]-{}", errorMessage, exception);
         Message<Void> message = Message.fail(MONITOR_CONFLICT_CODE, errorMessage);
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(message);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(message);
     }
 }

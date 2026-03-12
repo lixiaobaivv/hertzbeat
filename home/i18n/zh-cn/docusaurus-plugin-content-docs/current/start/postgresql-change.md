@@ -4,7 +4,7 @@ title: 关系型数据库使用 PostgreSQL 替换依赖的 H2 存储系统元数
 sidebar_label: 元数据存储PostgreSQL(推荐)
 ---
 
-PostgreSQL 是一个功能强大，开源的关系型数据库管理系统（RDBMS）。Apache HertzBeat (incubating) 除了支持使用默认内置的 H2 数据库外，还可以切换为使用 PostgreSQL 存储监控信息，告警信息，配置信息等结构化关系数据。
+PostgreSQL 是一个功能强大，开源的关系型数据库管理系统（RDBMS）。Apache HertzBeat™ 除了支持使用默认内置的 H2 数据库外，还可以切换为使用 PostgreSQL 存储监控信息，告警信息，配置信息等结构化关系数据。
 
 注意⚠️ 使用外置 PostgreSQL 数据库替换内置 H2 数据库为可选项，但建议生产环境配置，以提供更好的性能
 
@@ -23,7 +23,7 @@ PostgreSQL 是一个功能强大，开源的关系型数据库管理系统（RDB
 2. Docker 安装 PostgreSQL
 
    ```shell
-   docker run -d --name postgresql -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=123456 -e TZ=Asia/Shanghai postgres:15       
+   docker run -d --name postgresql -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=123456 -e TZ=Asia/Shanghai postgres:15
    ```
 
    使用 ```$ docker ps``` 查看数据库是否启动成功
@@ -69,12 +69,13 @@ spring:
 
   jpa:
     show-sql: false
-    database-platform: org.eclipse.persistence.platform.database.MySQLPlatform
     database: h2
+    hibernate:
+      ddl-auto: update
     properties:
-      eclipselink:
-        logging:
-          level: SEVERE
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: true
 ```
 
 具体替换参数如下,需根据 PostgreSQL 环境配置账户密码 IP:
@@ -90,14 +91,15 @@ spring:
       max-lifetime: 120000
   jpa:
     show-sql: false
-    database-platform: org.eclipse.persistence.platform.database.PostgreSQLPlatform
     database: postgresql
+    hibernate:
+      ddl-auto: update
     properties:
-      eclipselink:
-        logging:
-          level: SEVERE
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
 ```
 
-> 注意：上述是针对下载安装包的方式，对于本地切换数据源，只需完成[数据库创建](./postgresql-change#数据库创建)以及修改`hertzbeat-manager/src/main/resources/application.yml`中的配置即可。
+> 注意：上述是针对下载安装包的方式，对于本地切换数据源,只需完成[数据库创建](./postgresql-change#数据库创建)以及修改`hertzbeat-startup/src/main/resources/application.yml`中的配置即可。
 
-**启动 HertzBeat 浏览器访问 <http://ip:1157/> 开始使用HertzBeat进行监控告警，默认账户密码 admin/hertzbeat**
+**启动 HertzBeat 浏览器访问 [http://ip:1157/](http://ip:1157/) 开始使用HertzBeat进行监控告警,默认账户密码 admin/hertzbeat**

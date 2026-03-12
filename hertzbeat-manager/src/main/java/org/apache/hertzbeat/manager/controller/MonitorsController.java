@@ -22,10 +22,12 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import org.apache.hertzbeat.common.entity.dto.Message;
 import org.apache.hertzbeat.common.entity.manager.Monitor;
+import org.apache.hertzbeat.manager.pojo.dto.MonitorInfo;
 import org.apache.hertzbeat.manager.service.MonitorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -53,27 +55,30 @@ public class MonitorsController {
     @GetMapping
     @Operation(summary = "Obtain a list of monitoring information based on query filter items",
             description = "Obtain a list of monitoring information based on query filter items")
-    public ResponseEntity<Message<Page<Monitor>>> getMonitors(
+    public ResponseEntity<Message<Page<MonitorInfo>>> getMonitors(
             @Parameter(description = "Monitor ID", example = "6565463543") @RequestParam(required = false) final List<Long> ids,
             @Parameter(description = "Monitor Type", example = "linux") @RequestParam(required = false) final String app,
-            @Parameter(description = "Monitor Name support fuzzy query", example = "linux-127.0.0.1") @RequestParam(required = false) final String name,
-            @Parameter(description = "Monitor Host support fuzzy query", example = "127.0.0.1") @RequestParam(required = false) final String host,
             @Parameter(description = "Monitor Status 0:no monitor,1:usable,2:disabled,9:all status", example = "1") @RequestParam(required = false) final Byte status,
+            @Parameter(description = "Monitor Host support fuzzy query", example = "127.0.0.1") @RequestParam(required = false) final String search,
+            @Parameter(description = "Monitor labels ", example = "env:prod,instance:22") @RequestParam(required = false) final String labels,
             @Parameter(description = "Sort Field ", example = "name") @RequestParam(defaultValue = "gmtCreate") final String sort,
             @Parameter(description = "Sort mode eg:asc desc", example = "desc") @RequestParam(defaultValue = "desc") final String order,
             @Parameter(description = "List current page", example = "0") @RequestParam(defaultValue = "0") int pageIndex,
-            @Parameter(description = "Number of list pagination ", example = "8") @RequestParam(defaultValue = "8") int pageSize,
-            @Parameter(description = "Monitor tag ", example = "env:prod") @RequestParam(required = false) final String tag) {
-        Page<Monitor> monitorPage = monitorService.getMonitors(ids, app, name, host, status, sort, order, pageIndex, pageSize, tag);
-        return ResponseEntity.ok(Message.success(monitorPage));
+            @Parameter(description = "Number of list pagination ", example = "8") @RequestParam(defaultValue = "8") int pageSize) {
+        Page<Monitor> monitorPage = monitorService.getMonitors(ids, app, search, status, sort, order, pageIndex, pageSize, labels);
+        Page<MonitorInfo> responsePage = monitorPage == null ? Page.empty() : monitorPage.map(MonitorInfo::fromEntity);
+        return ResponseEntity.ok(Message.success(responsePage));
     }
 
     @GetMapping(path = "/{app}")
     @Operation(summary = "Filter all acquired monitoring information lists of the specified monitoring type according to the query",
             description = "Filter all acquired monitoring information lists of the specified monitoring type according to the query")
-    public ResponseEntity<Message<List<Monitor>>> getAppMonitors(
+    public ResponseEntity<Message<List<MonitorInfo>>> getAppMonitors(
             @Parameter(description = "en: Monitoring type", example = "linux") @PathVariable(required = false) final String app) {
-        return ResponseEntity.ok(Message.success(monitorService.getAppMonitors(app)));
+        List<Monitor> monitors = monitorService.getAppMonitors(app);
+        List<MonitorInfo> response = monitors == null ? Collections.emptyList()
+                : monitors.stream().map(MonitorInfo::fromEntity).toList();
+        return ResponseEntity.ok(Message.success(response));
     }
 
 
@@ -117,9 +122,17 @@ public class MonitorsController {
     @Operation(summary = "export monitor config", description = "export monitor config")
     public void export(
             @Parameter(description = "Monitor ID List", example = "6565463543") @RequestParam List<Long> ids,
-            @Parameter(description = "Export Type:JSON,EXCEL,YAML") @RequestParam(defaultValue = "JSON") String type,
+            @Parameter(description = "Export Type:JSON,EXCEL") @RequestParam(defaultValue = "JSON") String type,
             HttpServletResponse res) throws Exception {
         monitorService.export(ids, type, res);
+    }
+
+    @GetMapping("/export/all")
+    @Operation(summary = "export all monitor config", description = "export all monitor config")
+    public void exportAll(
+            @Parameter(description = "Export Type:JSON,EXCEL,YAML") @RequestParam(defaultValue = "JSON") String type,
+            HttpServletResponse res) throws Exception {
+        monitorService.exportAll(type, res);
     }
 
     @PostMapping("/import")
@@ -127,17 +140,5 @@ public class MonitorsController {
     public ResponseEntity<Message<Void>> export(MultipartFile file) throws Exception {
         monitorService.importConfig(file);
         return ResponseEntity.ok(Message.success("Import success"));
-    }
-
-
-    @PostMapping("/copy")
-    @Operation(summary = "copy monitors by ids", description = "copy monitors by ids")
-    public ResponseEntity<Message<Void>> duplicateMonitors(
-            @Parameter(description = "Monitor ID List", example = "6565463543") @RequestParam List<Long> ids
-    ) {
-        if (ids != null && !ids.isEmpty()) {
-            monitorService.copyMonitors(ids);
-        }
-        return ResponseEntity.ok(Message.success("copy success"));
     }
 }

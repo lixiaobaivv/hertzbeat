@@ -3,7 +3,6 @@ title: 开源实时监控 HertzBeat v1.3.2 发布, 更稳定更易用
 author: tom  
 author_title: tom   
 author_url: https://github.com/tomsun28  
-author_image_url: https://avatars.githubusercontent.com/u/24788200?s=400&v=4  
 tags: [opensource, practice]
 keywords: [open source monitoring system, alerting system, Linux monitoring]
 ---
@@ -15,17 +14,15 @@ keywords: [open source monitoring system, alerting system, Linux monitoring]
 ### HertzBeat 介绍
 
 > HertzBeat赫兹跳动 是一个拥有强大自定义监控能力，无需 Agent 的开源实时监控告警工具。
-> 致力于**易用友好**，全 WEB 页面操作，鼠标点一点就能监控告警，零上手学习成本。
+> 致力于**易用友好**，全 WEB 页面操作，鼠标点一点就能监控告警，无需学习成本。
 > 集 **监控+告警+通知** 为一体，支持对应用服务，应用程序，数据库，缓存，操作系统，大数据，中间件，Web服务器，云原生，网络，自定义等指标监控，阈值告警通知一步到位。
 > 支持更自由化的阈值规则(计算表达式)，`邮件` `Discord` `Slack` `Telegram` `钉钉` `微信` `飞书` `短信` `Webhook` 等方式及时送达。
 >
 > 我们将`Http, Jmx, Ssh, Snmp, Jdbc, Prometheus`等协议规范可配置化，您只需配置`YML`就能使用这些协议去自定义采集任何您想要的指标。
 
-![HertzBeat](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/4236e748f5ac4352b7cf4bb65ccf97aa~tplv-k3u1fbpfcp-zoom-1.image)
+**Github: [https://github.com/apache/hertzbeat](https://github.com/apache/hertzbeat)**
 
-**Github: <https://github.com/apache/hertzbeat>**
-
-**Gitee: <https://gitee.com/hertzbeat/hertzbeat>**
+**Gitee: [https://gitee.com/hertzbeat/hertzbeat](https://gitee.com/hertzbeat/hertzbeat)**
 
 ### v1.3.2 来了
 
@@ -53,8 +50,8 @@ keywords: [open source monitoring system, alerting system, Linux monitoring]
 
 ## ⛄ 已支持
 
-> 我们将监控采集类型(mysql,jvm,k8s)都定义为yml监控模版，用户可以导入这些模版来支持对应类型的监控!
-> 欢迎大家一起贡献你使用过程中自定义的通用监控类型监控模版。
+> 我们将监控采集类型(mysql,jvm,k8s)都定义为yml监控模板，用户可以导入这些模板来支持对应类型的监控!
+> 欢迎大家一起贡献你使用过程中自定义的通用监控类型监控模板。
 
 - Website, Port Telnet, Http Api, Ping Connect, Jvm, SiteMap, Ssl Certificate, SpringBoot2, FTP Server, SpringBoot3
 - Mysql, PostgreSQL, MariaDB, Redis, ElasticSearch, SqlServer, Oracle, MongoDB, DM, OpenGauss, ClickHouse, IoTDB, Redis Cluster, Redis Sentinel
@@ -62,12 +59,12 @@ keywords: [open source monitoring system, alerting system, Linux monitoring]
 - Tomcat, Nacos, Zookeeper, RabbitMQ, Flink, Kafka, ShenYu, DynamicTp, Jetty, ActiveMQ
 - Kubernetes, Docker
 - CiscoSwitch, HpeSwitch, HuaweiSwitch, TpLinkSwitch, H3cSwitch
-- 和更多自定义监控模版。
+- 和更多自定义监控模板。
 - 通知支持 Discord Slack Telegram 邮件 钉钉 微信 飞书 短信 Webhook。
 
 ---
 
 **欢迎star三连来支持我们**
 
-**Github: <https://github.com/apache/hertzbeat>**
-**Gitee: <https://gitee.com/hertzbeat/hertzbeat>**
+**Github: [https://github.com/apache/hertzbeat](https://github.com/apache/hertzbeat)**
+**Gitee: [https://gitee.com/hertzbeat/hertzbeat](https://gitee.com/hertzbeat/hertzbeat)**

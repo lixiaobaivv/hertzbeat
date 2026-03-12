@@ -17,7 +17,7 @@
  * under the License.
  */
 
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { finalize } from 'rxjs/operators';
 
@@ -52,6 +52,10 @@ export class MonitorDataTableComponent implements OnInit {
   metrics!: string;
   @Input()
   height: string = '100%';
+  @Input()
+  favoriteStatus: boolean = false;
+  @Output()
+  readonly favoriteToggle = new EventEmitter<string>();
 
   showModal!: boolean;
   time!: any;
@@ -95,5 +99,25 @@ export class MonitorDataTableComponent implements OnInit {
           metricData$.unsubscribe();
         }
       );
+  }
+
+  getObjectLength(obj: Record<string, string> | undefined): number {
+    if (!obj) return 0;
+    return Object.keys(obj).length;
+  }
+
+  getObjectEntries(obj: Record<string, string> | undefined): Array<[string, string]> {
+    if (!obj) return [];
+    return Object.entries(obj);
+  }
+
+  toggleFavorite() {
+    if (this.metrics) {
+      this.favoriteToggle.emit(this.metrics);
+    }
+  }
+
+  isFavorite(): boolean {
+    return this.favoriteStatus;
   }
 }

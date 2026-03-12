@@ -41,7 +41,7 @@ for /f "tokens=1-5" %%i in ('netstat -ano^|findstr "0.0.0.0:%SERVER_PORT%"') do 
 	echo exit!
     goto q
 )
-set MAIN_CLASS=org.apache.hertzbeat.manager.Manager
+set MAIN_CLASS=org.apache.hertzbeat.startup.HertzBeatApplication
 set LOGS_DIR=%DEPLOY_DIR%\logs
 set EXT_LIB_PATH=%DEPLOY_DIR%\ext-lib
 set CLASSPATH=%DEPLOY_DIR%\%JAR_NAME%;%EXT_LIB_PATH%\*
@@ -52,7 +52,7 @@ if not exist %LOGS_DIR% (
 
 rem JVM Configuration
 
-set JAVA_OPTS= -Duser.timezone=Asia/Shanghai -Doracle.jdbc.timezoneAsRegion=false --add-opens=java.base/java.nio=org.apache.arrow.memory.core,ALL-UNNAMED
+set JAVA_OPTS= -Duser.timezone=Asia/Shanghai -Dfile.encoding=UTF-8 -Doracle.jdbc.timezoneAsRegion=false --add-opens=java.base/java.nio=org.apache.arrow.memory.core,ALL-UNNAMED
 
 set JAVA_MEM_OPTS= -server -XX:SurvivorRatio=6 -XX:+UseParallelGC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=%LOGS_DIR%
 

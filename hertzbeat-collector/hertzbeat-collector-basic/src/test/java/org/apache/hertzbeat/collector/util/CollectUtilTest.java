@@ -21,25 +21,28 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
+
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import org.apache.hertzbeat.common.entity.job.Configmap;
 import org.apache.hertzbeat.common.entity.job.Metrics;
+import org.apache.hertzbeat.common.util.JsonUtil;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * Test case for {@link CollectUtil}
  */
 class CollectUtilTest {
-
-    private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
 
     @Test
     void countMatchKeyword() {
@@ -108,7 +111,7 @@ class CollectUtilTest {
     }
 
     @Test
-    void replaceCryPlaceholder() throws JsonMappingException, JsonProcessingException {
+    void replaceCryPlaceholder() {
         Metrics metrics = Metrics.builder().name("^o^name^o^").build();
         JsonElement jsonElement = new Gson().toJsonTree(metrics);
         Map<String, Configmap> configmap = new HashMap<>();
@@ -118,7 +121,7 @@ class CollectUtilTest {
 
         Metrics metricsTarget = Metrics.builder().name("张三").build();
         JsonElement jsonElementTarget = new Gson().toJsonTree(metricsTarget);
-        assertEquals(JSON_MAPPER.readTree(jsonElementTarget.toString()), JSON_MAPPER.readTree(res1.toString()));
+        assertEquals(JsonUtil.fromJson(jsonElementTarget.toString()), JsonUtil.fromJson(res1.toString()));
 
         List<Metrics> metricsList = new ArrayList<>();
         metricsList.add(metrics);
@@ -130,11 +133,69 @@ class CollectUtilTest {
         metricsListTarget.add(metricsTarget);
         metricsListTarget.add(metricsTarget);
         JsonElement jsonArrayTarget = new Gson().toJsonTree(metricsListTarget);
-        assertEquals(JSON_MAPPER.readTree(jsonArrayTarget.toString()), JSON_MAPPER.readTree(res2.toString()));
+        assertEquals(JsonUtil.fromJson(jsonArrayTarget.toString()), JsonUtil.fromJson(res2.toString()));
+    }
+
+    static Stream<Arguments> testParamsForShouldVerifyReplaceCryPlaceholder() {
+        JsonObject jsonObject = new JsonObject();
+        String value = "^o^A1-B2.C3^o^";
+        String replacedField = "A1-B2.C3";
+        String replacedValue = "A1B2C3";
+        String nameKey = "name";
+        String messageKey = "message";
+
+        jsonObject.add(messageKey, new JsonPrimitive(value));
+        Map<String, Configmap> configmap = new HashMap<>();
+        Configmap config = Configmap.builder().key(nameKey).value(replacedValue).build();
+        configmap.put(replacedField, config);
+
+        JsonObject jsonObjectExpected = new JsonObject();
+        jsonObjectExpected.addProperty(messageKey, replacedValue);
+
+        Map<String, Configmap> configmapUnmatched = new HashMap<>();
+        Configmap configUnmatched = Configmap.builder().key(nameKey).value(replacedValue).build();
+        configmapUnmatched.put(nameKey, configUnmatched);
+
+        JsonObject jsonObjectExpectedForUnmatched = new JsonObject();
+        jsonObjectExpectedForUnmatched.addProperty(messageKey, value);
+
+        Map<String, Configmap> configMapSameLength = new HashMap<>();
+        Configmap configSameLength = Configmap.builder().key(nameKey).value(null).build();
+        configMapSameLength.put(replacedField, configSameLength);
+
+        JsonObject jsonObjectExpectedForSameLength = new JsonObject();
+        jsonObjectExpectedForSameLength.addProperty(messageKey, (String) null);
+
+        return Stream.of(
+                Arguments.of(jsonObject.deepCopy(), configMapSameLength, jsonObjectExpectedForSameLength),
+                Arguments.of(jsonObject.deepCopy(), configmap, jsonObjectExpected),
+                Arguments.of(jsonObject.deepCopy(), configmapUnmatched, jsonObjectExpectedForUnmatched)
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("testParamsForShouldVerifyReplaceCryPlaceholder")
+    void shouldVerifyReplaceCryPlaceholder(JsonObject jsonObject,
+                                           Map<String, Configmap> configmap,
+                                           JsonObject jsonObjectTarget) {
+
+        JsonElement res1 = CollectUtil.replaceCryPlaceholder(jsonObject, configmap);
+        assertEquals(JsonUtil.fromJson(jsonObjectTarget.toString()), JsonUtil.fromJson(res1.toString()));
+
+        List<JsonObject> metricsList = new ArrayList<>();
+        metricsList.add(jsonObject);
+        JsonElement jsonArray = new Gson().toJsonTree(metricsList);
+        JsonElement res2 = CollectUtil.replaceCryPlaceholder(jsonArray, configmap);
+
+        List<JsonObject> metricsListTarget = new ArrayList<>();
+
+        metricsListTarget.add(jsonObjectTarget);
+        JsonElement jsonArrayTarget = new Gson().toJsonTree(metricsListTarget);
+        assertEquals(JsonUtil.fromJson(jsonArrayTarget.toString()), JsonUtil.fromJson(res2.toString()));
     }
 
     @Test
-    void replaceSmilingPlaceholder() throws JsonMappingException, JsonProcessingException {
+    void replaceSmilingPlaceholder() {
         Metrics metrics = Metrics.builder().name("^_^name^_^").build();
         JsonElement jsonElement = new Gson().toJsonTree(metrics);
         HashMap<String, Configmap> configmap = new HashMap<>();
@@ -143,7 +204,7 @@ class CollectUtilTest {
         JsonElement res = CollectUtil.replaceSmilingPlaceholder(jsonElement, configmap);
         Metrics metricsTarget = Metrics.builder().name("张三").build();
         JsonElement jsonElement2 = new Gson().toJsonTree(metricsTarget);
-        assertEquals(JSON_MAPPER.readTree(jsonElement2.toString()), JSON_MAPPER.readTree(res.toString()));
+        assertEquals(JsonUtil.fromJson(jsonElement2.toString()), JsonUtil.fromJson(res.toString()));
 
         List<Metrics> metricsList = new ArrayList<>();
         metricsList.add(metrics);
@@ -155,7 +216,7 @@ class CollectUtilTest {
         metricsListTarget.add(metricsTarget);
         metricsListTarget.add(metricsTarget);
         JsonElement jsonArrayTarget = new Gson().toJsonTree(metricsListTarget);
-        assertEquals(JSON_MAPPER.readTree(jsonArrayTarget.toString()), JSON_MAPPER.readTree(res2.toString()));
+        assertEquals(JsonUtil.fromJson(jsonArrayTarget.toString()), JsonUtil.fromJson(res2.toString()));
     }
 
     @Test

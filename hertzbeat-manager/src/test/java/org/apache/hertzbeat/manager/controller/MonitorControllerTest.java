@@ -60,7 +60,7 @@ class MonitorControllerTest {
         monitor.setJobId(43243543543L);
         monitor.setName("Api-TanCloud.cn");
         monitor.setName("TanCloud");
-        monitor.setHost("192.167.25.11");
+        monitor.setInstance("192.167.25.11:8989");
         monitor.setIntervals(600);
         monitor.setDescription("对SAAS网站TanCloud的可用性监控");
         monitor.setCreator("tom");
@@ -115,7 +115,7 @@ class MonitorControllerTest {
         monitor.setJobId(43243543543L);
         monitor.setName("Api-TanCloud.cn");
         monitor.setName("TanCloud");
-        monitor.setHost("192.167.25.11");
+        monitor.setInstance("192.167.25.11:8989");
         monitor.setIntervals(600);
         monitor.setDescription("对SAAS网站TanCloud的可用性监控");
         monitor.setCreator("tom");
@@ -142,7 +142,7 @@ class MonitorControllerTest {
         monitor.setJobId(43243543543L);
         monitor.setName("Api-TanCloud.cn");
         monitor.setName("TanCloud");
-        monitor.setHost("192.167.25.11");
+        monitor.setInstance("192.167.25.11:8989");
         monitor.setIntervals(600);
         monitor.setDescription("对SAAS网站TanCloud的可用性监控");
         monitor.setCreator("tom");
@@ -168,38 +168,6 @@ class MonitorControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value((int) CommonConstants.SUCCESS_CODE))
                 .andExpect(jsonPath("$.msg").value("Detect success."))
-                .andReturn();
-    }
-
-    @Test
-    void addNewMonitorOptionalMetrics() throws Exception {
-        MonitorDto monitorDto = dataTest();
-
-        this.mockMvc.perform(MockMvcRequestBuilders.post("/api/monitor/optional")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(JsonUtil.toJson(monitorDto)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code").value((int) CommonConstants.SUCCESS_CODE))
-                .andExpect(jsonPath("$.msg").value("Add success"))
-                .andReturn();
-    }
-
-    @Test
-    void getMonitorMetrics() throws Exception {
-
-        List<String> metricNames = new ArrayList<>();
-
-        Mockito.when(monitorService.getMonitorMetrics("app"))
-                .thenReturn(metricNames);
-
-        this.mockMvc.perform(MockMvcRequestBuilders.get("/api/monitor/metric/{app}", "app"))
-                .andExpect(jsonPath("$.code").value((int) CommonConstants.SUCCESS_CODE))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        this.mockMvc.perform(MockMvcRequestBuilders.get("/api/monitor/metric"))
-                .andExpect(jsonPath("$.code").value((int) CommonConstants.SUCCESS_CODE))
-                .andExpect(status().isOk())
                 .andReturn();
     }
 }

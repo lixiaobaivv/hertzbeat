@@ -30,9 +30,11 @@ const monitors_uri = '/monitors';
 const detect_monitor_uri = '/monitor/detect';
 const manage_monitors_uri = '/monitors/manage';
 const export_monitors_uri = '/monitors/export';
+const export_all_monitors_uri = '/monitors/export/all';
 const summary_uri = '/summary';
 const warehouse_storage_status_uri = '/warehouse/storage/status';
 const grafana_dashboard_uri = '/grafana/dashboard';
+const metrics_favorite_uri = '/metrics/favorite';
 
 @Injectable({
   providedIn: 'root'
@@ -46,14 +48,6 @@ export class MonitorService {
 
   public editMonitor(body: any): Observable<Message<any>> {
     return this.http.put<Message<any>>(monitor_uri, body);
-  }
-
-  public getMonitorByApp(app: string): Observable<Message<any>> {
-    return this.http.get<Message<any>>(`${monitor_uri}/metric/${app}`);
-  }
-
-  public deleteMonitor(monitorId: number): Observable<Message<any>> {
-    return this.http.delete<Message<any>>(`${monitor_uri}/${monitorId}`);
   }
 
   public deleteMonitors(monitorIds: Set<number>): Observable<Message<any>> {
@@ -76,6 +70,16 @@ export class MonitorService {
     });
     httpParams = httpParams.append('type', type);
     return this.http.get(export_monitors_uri, {
+      params: httpParams,
+      observe: 'response',
+      responseType: 'blob'
+    });
+  }
+
+  public exportAllMonitors(type: string): Observable<HttpResponse<Blob>> {
+    let httpParams = new HttpParams();
+    httpParams = httpParams.append('type', type);
+    return this.http.get(export_all_monitors_uri, {
       params: httpParams,
       observe: 'response',
       responseType: 'blob'
@@ -117,8 +121,8 @@ export class MonitorService {
 
   public searchMonitors(
     app: string | undefined,
-    tag: string | undefined,
-    searchValue: string,
+    labels: string | undefined,
+    search: string,
     status: number,
     pageIndex: number,
     pageSize: number,
@@ -133,8 +137,8 @@ export class MonitorService {
       pageIndex: pageIndex,
       pageSize: pageSize
     });
-    if (tag != undefined) {
-      httpParams = httpParams.append('tag', tag);
+    if (labels != undefined) {
+      httpParams = httpParams.append('labels', labels);
     }
     if (status != undefined && status != 9) {
       httpParams = httpParams.append('status', status);
@@ -148,9 +152,8 @@ export class MonitorService {
         order: sortOrder == 'ascend' ? 'asc' : 'desc'
       });
     }
-    if (searchValue != undefined && searchValue != '' && searchValue.trim() != '') {
-      httpParams = httpParams.append('name', searchValue);
-      httpParams = httpParams.append('host', searchValue);
+    if (search != undefined && search != '' && search.trim() != '') {
+      httpParams = httpParams.append('search', search);
     }
     const options = { params: httpParams };
     return this.http.get<Message<Page<Monitor>>>(monitors_uri, options);
@@ -161,7 +164,7 @@ export class MonitorService {
   }
 
   public getMonitorMetricHistoryData(
-    monitorId: number,
+    instance: string,
     app: string,
     metrics: string,
     metric: string,
@@ -175,7 +178,7 @@ export class MonitorService {
       interval: interval
     });
     const options = { params: httpParams };
-    return this.http.get<Message<any>>(`/monitor/${monitorId}/metric/${metricFull}`, options);
+    return this.http.get<Message<any>>(`${monitor_uri}/${instance}/metric/${metricFull}`, options);
   }
 
   public getAppsMonitorSummary(): Observable<Message<any>> {
@@ -192,5 +195,21 @@ export class MonitorService {
 
   public deleteGrafanaDashboard(monitorId: number): Observable<Message<any>> {
     return this.http.delete<Message<any>>(`${grafana_dashboard_uri}?monitorId=${monitorId}`);
+  }
+
+  copyMonitor(id: number): Observable<any> {
+    return this.http.post<Message<any>>(`${monitor_uri}/copy/${id}`, null);
+  }
+
+  public addMetricsFavorite(monitorId: number, metricsName: string): Observable<Message<any>> {
+    return this.http.post<Message<any>>(`${metrics_favorite_uri}/${monitorId}/${metricsName}`, null);
+  }
+
+  public removeMetricsFavorite(monitorId: number, metricsName: string): Observable<Message<any>> {
+    return this.http.delete<Message<any>>(`${metrics_favorite_uri}/${monitorId}/${metricsName}`);
+  }
+
+  public getUserFavoritedMetrics(monitorId: number): Observable<Message<Set<string>>> {
+    return this.http.get<Message<Set<string>>>(`${metrics_favorite_uri}/${monitorId}`);
   }
 }

@@ -19,7 +19,7 @@ sidebar_label: 常见问题
 
    > 安装包部署需要配置java虚拟机root权限启动hertzbeat从而使用ICMP，若未启用root权限则是判断telnet对端7号端口是否开通  
    > docker安装默认启用无此问题  
-   > 详见 <https://stackoverflow.com/questions/11506321/how-to-ping-an-ip-address>
+   > 详见 [https://stackoverflow.com/questions/11506321/how-to-ping-an-ip-address](https://stackoverflow.com/questions/11506321/how-to-ping-an-ip-address)
 
 4. 配置了k8s监控，但是实际监控时间并未按照正确间隔时间执行  
    请参考下面几点排查问题：
@@ -30,6 +30,14 @@ sidebar_label: 常见问题
 
 5. 配置http api监控，用于进行业务接口探测，确保业务可以用，另外接口有进行token鉴权校验，"Authorization：Bearer eyJhbGciOiJIUzI1...."，配置后测试，提示“StatusCode 401”。服务端应用收到的token为"Authorization：Bearer%20eyJhbGciOiJIUzI1....",hertzbeat对空格进行转义为“%20”，服务器没有转义导致鉴权失败，建议转义功能作为可选项。
 
+6. 单个采集器的任务上限是多少?
+
+   > 在当前版本中，启用虚拟线程后，单个 collector 默认可并发执行 `512` 个采集任务。
+   > 这个默认值刻意高于旧版按 CPU 推导出来的线程池上限，目的是让单独部署的 HertzBeat 节点先尽量承载更多阻塞型采集任务，再决定是否扩容额外 collector。
+   > 当运行时超出已配置的 collector 并发上限时，会报错提示 "the worker pool is full, reject this metrics task，put in queue again"。
+   > 你可以在 `application.yml` 里通过 `hertzbeat.vthreads.collector.max-concurrent-jobs` 调整这个限制。
+   > 如果单机仍然无法承载当前任务量，再建议增加新的 collector，并设置为 public 模式，让 HertzBeat 自动做任务分发。
+
 ### Docker部署常见问题
 
 1. **MYSQL,TDENGINE和HertzBeat都Docker部署在同一主机上，HertzBeat使用localhost或127.0.0.1连接数据库失败**
@@ -38,7 +46,7 @@ sidebar_label: 常见问题
    > 解决办法一：配置application.yml将数据库的连接地址由localhost修改为宿主机的对外IP  
    > 解决办法二：使用Host网络模式启动Docker，即使Docker容器和宿主机共享网络 `docker run -d --network host .....`
 
-2. **按照流程部署，访问 <http://ip:1157/> 无界面**
+2. **按照流程部署，访问 [http://ip:1157/](http://ip:1157/) 无界面**
    请参考下面几点排查问题：
 
    > 一：依赖服务MYSQL数据库，TDENGINE数据库是否已按照启动成功，对应hertzbeat数据库是否已创建，SQL脚本是否执行  
@@ -52,7 +60,7 @@ sidebar_label: 常见问题
 
 ### 安装包部署常见问题
 
-1. **按照流程部署，访问 <http://ip:1157/> 无界面**
+1. **按照流程部署，访问 [http://ip:1157/](http://ip:1157/) 无界面**
    请参考下面几点排查问题：
 
    > 一：依赖服务MYSQL数据库，TDENGINE数据库是否已按照启动成功，对应hertzbeat数据库是否已创建，SQL脚本是否执行  

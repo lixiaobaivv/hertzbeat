@@ -17,12 +17,16 @@
 
 package org.apache.hertzbeat.manager.service.impl;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.type.TypeReference;
 import java.lang.reflect.Type;
+
+import jakarta.annotation.Resource;
+
 import org.apache.hertzbeat.common.constants.GeneralConfigTypeEnum;
-import org.apache.hertzbeat.manager.dao.GeneralConfigDao;
-import org.apache.hertzbeat.manager.pojo.dto.SmsNoticeSender;
+import org.apache.hertzbeat.base.dao.GeneralConfigDao;
+import org.apache.hertzbeat.common.entity.dto.sms.SmsConfig;
+import org.apache.hertzbeat.common.support.event.SmsConfigChangeEvent;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 /**
@@ -31,35 +35,37 @@ import org.springframework.stereotype.Service;
  */
 
 @Service
-public class SmsGeneralConfigServiceImpl extends AbstractGeneralConfigServiceImpl<SmsNoticeSender> {
+public class SmsGeneralConfigServiceImpl extends AbstractGeneralConfigServiceImpl<SmsConfig> {
+    @Resource
+    private ApplicationContext applicationContext;
+
+    public SmsGeneralConfigServiceImpl(GeneralConfigDao generalConfigDao) {
+        super(generalConfigDao);
+    }
 
     /**
-     * SmsGeneralConfigServiceImpl's constructor creates an instance of this class
-     * through the default constructor or deserialization construction (setBeanProps).
-     * The parameter generalConfigDao is used for dao layer operation data,
-     * and objectMapper is used for object mapping.
-     * @param generalConfigDao dao layer operation data, needed to create an instance of this class
-     * @param objectMapper     object mapping , needed to create an instance of this class
+     * This method is used to handle the sms configuration change event.
      */
-    public SmsGeneralConfigServiceImpl(GeneralConfigDao generalConfigDao, ObjectMapper objectMapper) {
-        super(generalConfigDao, objectMapper);
+    @Override
+    public void handler(SmsConfig smsConfig) {
+        applicationContext.publishEvent(new SmsConfigChangeEvent(applicationContext));
     }
-    
+
     @Override
     public String type() {
         return GeneralConfigTypeEnum.sms.name();
     }
-    
+
     /**
      * This method is used to get the TypeReference of NoticeSender type for subsequent processing.
      * a TypeReference of NoticeSender type
      */
     @Override
-    public TypeReference<SmsNoticeSender> getTypeReference() {
+    public TypeReference<SmsConfig> getTypeReference() {
         return new TypeReference<>() {
             @Override
             public Type getType() {
-                return SmsNoticeSender.class;
+                return SmsConfig.class;
             }
         };
     }

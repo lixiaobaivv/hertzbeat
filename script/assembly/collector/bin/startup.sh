@@ -82,7 +82,7 @@ if [ ! -d $LOGS_DIR ]; then
 fi
 
 # JVM Configuration
-JAVA_OPTS=" -Duser.timezone=Asia/Shanghai -Doracle.jdbc.timezoneAsRegion=false --add-opens=java.base/java.nio=org.apache.arrow.memory.core,ALL-UNNAMED"
+JAVA_OPTS=" -Duser.timezone=Asia/Shanghai -Dfile.encoding=UTF-8 -Doracle.jdbc.timezoneAsRegion=false --add-opens=java.base/java.nio=org.apache.arrow.memory.core,ALL-UNNAMED"
 
 JAVA_MEM_OPTS=" -server -XX:SurvivorRatio=6 -XX:+UseParallelGC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=$LOGS_DIR"
 
@@ -103,7 +103,7 @@ if [ -f "./java/bin/java" ]; then
 else
     JAVA_EXIST=`which java | grep bin | wc -l`
     if [ $JAVA_EXIST -le 0 ]; then
-      echo -e "ERROR: there is no java17+ environment, please config java environment."
+      echo -e "ERROR: there is no java21+ environment, please config java environment."
       exit 1
     fi
     echo -e "Use the system environment jdk to start"

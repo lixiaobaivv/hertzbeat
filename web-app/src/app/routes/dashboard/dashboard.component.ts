@@ -27,14 +27,15 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { fromEvent } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 
-import { Alert } from '../../pojo/Alert';
 import { AppCount } from '../../pojo/AppCount';
 import { CollectorSummary } from '../../pojo/CollectorSummary';
+import { SingleAlert } from '../../pojo/SingleAlert';
 import { AlertService } from '../../service/alert.service';
 import { CollectorService } from '../../service/collector.service';
+import { LabelService } from '../../service/label.service';
 import { MonitorService } from '../../service/monitor.service';
-import { TagService } from '../../service/tag.service';
-import { formatTagName } from '../../shared/utils/common-util';
+import { ThemeService } from '../../service/theme.service';
+import { formatLabelName } from '../../shared/utils/common-util';
 
 @Component({
   selector: 'app-dashboard',
@@ -47,13 +48,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private msg: NzMessageService,
     private monitorSvc: MonitorService,
     private alertSvc: AlertService,
-    private tagSvc: TagService,
+    private labelSvc: LabelService,
     private collectorSvc: CollectorService,
     @Inject(ALAIN_I18N_TOKEN) private i18nSvc: I18NService,
     private router: Router,
+    private themeSvc: ThemeService,
     private cdr: ChangeDetectorRef
   ) {}
 
+  theme: string = 'default';
   // Tag Word Cloud
   wordCloudData: CloudData[] = [];
   wordCloudDataLoading: boolean = false;
@@ -80,8 +83,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   refreshWordCloudContent(): void {
     this.wordCloudDataLoading = true;
-    let tagsInit$ = this.tagSvc
-      .loadTags(undefined, 1, 0, 10000)
+    let tagsInit$ = this.labelSvc
+      .loadLabels(undefined, 1, 0, 10000)
       .pipe(finalize(() => (this.wordCloudDataLoading = false)))
       .subscribe(
         message => {
@@ -92,7 +95,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
               let tmpData: CloudData[] = [];
               tags.forEach(item => {
                 tmpData.push({
-                  text: formatTagName(item),
+                  text: formatLabelName(item),
                   weight: Math.random() * (10 - 5) + 5
                 });
               });
@@ -113,8 +116,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
       );
   }
 
-  onTagCloudClick(data: CloudData): void {
-    this.router.navigate(['/monitors'], { queryParams: { tag: data.text } });
+  onLabelCloudClick(data: CloudData): void {
+    this.router.navigate(['/monitors'], { queryParams: { labels: data.text } });
   }
 
   // start -- quantitative information summary
@@ -132,11 +135,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   slideConfig = {
     infinite: true,
-    speed: 1200,
+    speed: 1800,
     slidesToShow: 4,
     slidesToScroll: 1,
     autoplay: true,
-    autoplaySpeed: 1200,
+    autoplaySpeed: 2400,
     rows: 1,
     responsive: [
       {
@@ -171,24 +174,26 @@ export class DashboardComponent implements OnInit, OnDestroy {
   // collector list
   collectorsLoading: boolean = false;
   collectors!: CollectorSummary[];
-  collectorsTabSelectedIndex = 0;
+  collectorsTabSelectedIndexes: { [key: number]: number } = {};
 
   // alert list
-  alerts!: Alert[];
+  alerts!: SingleAlert[];
   alertContentLoading: boolean = false;
 
   ngOnInit(): void {
+    this.theme = this.themeSvc.getTheme() || 'default';
     this.appsCountTheme = {
       title: {
         text: `{a|${this.i18nSvc.fanyi('dashboard.monitors.title')}}`,
         subtext: `{b|${this.i18nSvc.fanyi('dashboard.monitors.sub-title')}}`,
+        show: false,
         left: 'center',
         textStyle: {
           rich: {
             a: {
               fontWeight: 'bolder',
               align: 'center',
-              fontSize: 26
+              fontSize: 14
             }
           }
         },
@@ -197,7 +202,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
             b: {
               fontWeight: 'normal',
               align: 'center',
-              fontSize: 14
+              fontSize: 12
             }
           }
         }
@@ -242,34 +247,23 @@ export class DashboardComponent implements OnInit, OnDestroy {
             length: 30
           },
           label: {
-            formatter: '{a|{a}}{abg|}\n{hr|}\n  {b|{b}}   {per|{d}%}  ',
-            backgroundColor: '#F6F8FC',
-            borderColor: '#8C8D8E',
-            borderWidth: 1,
+            formatter: '{b|{b}}{per|({d}%)}',
+            backgroundColor: 'transparent',
+            borderColor: '#D9D9D9',
+            borderWidth: 0.5,
             borderRadius: 4,
             rich: {
-              a: {
-                color: '#6E7079',
-                lineHeight: 22,
-                align: 'center'
-              },
-              hr: {
-                borderColor: '#8C8D8E',
-                width: '100%',
-                borderWidth: 1,
-                height: 0
-              },
               b: {
-                color: '#4C5058',
-                fontSize: 14,
+                color: '#6E7079',
+                lineHeight: 30,
                 fontWeight: 'bold',
-                lineHeight: 33
+                align: 'center',
+                padding: [4, 4]
               },
               per: {
-                color: '#fff',
-                backgroundColor: '#4C5058',
-                padding: [3, 4],
-                borderRadius: 4
+                color: '#6E7079',
+                align: 'center',
+                padding: [4, 4]
               }
             }
           }
@@ -296,12 +290,19 @@ export class DashboardComponent implements OnInit, OnDestroy {
           type: 'shadow'
         }
       },
+      grid: {
+        top: '20%',
+        right: 0,
+        bottom: '20%',
+        left: 0
+      },
       xAxis: {
         type: 'category',
-        data: [this.i18nSvc.fanyi('alert.priority.2'), this.i18nSvc.fanyi('alert.priority.1'), this.i18nSvc.fanyi('alert.priority.0')]
+        data: [this.i18nSvc.fanyi('alert.severity.2'), this.i18nSvc.fanyi('alert.severity.1'), this.i18nSvc.fanyi('alert.severity.0')]
       },
       yAxis: {
-        type: 'value'
+        type: 'value',
+        show: false
       },
       series: [
         {
@@ -570,7 +571,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   refreshAlertContentList(): void {
     this.alertContentLoading = true;
     let alertsInit$ = this.alertSvc
-      .loadAlerts(undefined, undefined, undefined, 0, 10)
+      .loadAlerts('firing', undefined, 0, 10)
       .pipe(finalize(() => (this.alertContentLoading = false)))
       .subscribe(
         message => {

@@ -3,7 +3,6 @@ title: Welcome two new Committers from HertzBeat
 author: tom  
 author_title: tom   
 author_url: https://github.com/tomsun28  
-author_image_url: https://avatars.githubusercontent.com/u/24788200?s=400&v=4  
 tags: [opensource]
 ---
 
@@ -113,8 +112,8 @@ First of all, I am also a newcomer to Novice Village, but I can share some of my
 >
 > The powerful customization of `HertzBeat`, multi-type support, easy expansion, and low coupling, hope to help developers and small and medium-sized teams quickly build their own monitoring tools.
 
-**Github: <https://github.com/apache/hertzbeat>**
-**Gitee: <https://gitee.com/hertzbeat/hertzbeat>**
+**Github: [https://github.com/apache/hertzbeat](https://github.com/apache/hertzbeat)**
+**Gitee: [https://gitee.com/hertzbeat/hertzbeat](https://gitee.com/hertzbeat/hertzbeat)**
 
 ## ⛄ Supported
 

@@ -17,20 +17,17 @@
 
 package org.apache.hertzbeat.alert.controller;
 
-import static org.apache.hertzbeat.common.constants.CommonConstants.MONITOR_NOT_EXIST_CODE;
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 import org.apache.hertzbeat.alert.service.AlertDefineService;
+import org.apache.hertzbeat.alert.service.DataSourceService;
 import org.apache.hertzbeat.common.entity.alerter.AlertDefine;
-import org.apache.hertzbeat.common.entity.alerter.AlertDefineMonitorBind;
 import org.apache.hertzbeat.common.entity.dto.Message;
+import org.apache.hertzbeat.common.support.exception.AlertExpressionException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -39,7 +36,16 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+import static org.apache.hertzbeat.common.constants.CommonConstants.FAIL_CODE;
+import static org.apache.hertzbeat.common.constants.CommonConstants.MONITOR_NOT_EXIST_CODE;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 /**
  * Alarm definition management API
@@ -51,6 +57,9 @@ public class AlertDefineController {
 
     @Autowired
     private AlertDefineService alertDefineService;
+
+    @Autowired
+    private DataSourceService dataSourceService;
 
     @PostMapping
     @Operation(summary = "New Alarm Definition", description = "Added an alarm definition")
@@ -93,24 +102,26 @@ public class AlertDefineController {
         return ResponseEntity.ok(Message.success("Delete success"));
     }
 
-    @PostMapping(path = "/{alertDefineId}/monitors")
-    @Operation(summary = "Application alarm definition is associated with monitoring",
-            description = "Applies the association between specified alarm definitions and monitoring")
-    public ResponseEntity<Message<Void>> applyAlertDefineMonitorsBind(
-            @Parameter(description = "Alarm Definition ID", example = "6565463543") @PathVariable("alertDefineId") long alertDefineId,
-            @RequestBody List<AlertDefineMonitorBind> alertDefineMonitorBinds) {
-        alertDefineService.applyBindAlertDefineMonitors(alertDefineId, alertDefineMonitorBinds);
-        return ResponseEntity.ok(Message.success("Apply success"));
+    @GetMapping(path = "/preview/{datasource}")
+    @Operation(summary = "Alarm definition expression preview",
+            description = "If the expression is formal, then the result of the query will be returned, otherwise it will respond with an error")
+    public ResponseEntity<Message<List<Map<String, Object>>>> getDefinePreview(
+            @Parameter(description = "Data Source Type", example = "promql") @PathVariable("datasource") String datasource,
+            @Parameter(description = "alert threshold type:realtime,periodic") @RequestParam String type,
+            @Parameter(description = "alert threshold expression") @RequestParam String expr) {
+        try {
+            return ResponseEntity.ok(Message.successWithData(alertDefineService.getDefinePreview(datasource, type, expr)));
+        } catch (AlertExpressionException ae) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Message.fail(FAIL_CODE, ae.getMessage()));
+        }
     }
 
-    @GetMapping(path = "/{alertDefineId}/monitors")
-    @Operation(summary = "Application alarm definition is associated with monitoring",
-            description = "Applies the association between specified alarm definitions and monitoring")
-    public ResponseEntity<Message<List<AlertDefineMonitorBind>>> getAlertDefineMonitorsBind(
-            @Parameter(description = "Alarm Definition ID", example = "6565463543") @PathVariable("alertDefineId") long alertDefineId) {
-        List<AlertDefineMonitorBind> defineBinds = alertDefineService.getBindAlertDefineMonitors(alertDefineId);
-        defineBinds = defineBinds.stream().filter(item -> item.getMonitor() != null).collect(Collectors.toList());
-        return ResponseEntity.ok(Message.success(defineBinds));
+    @GetMapping(path = "/datasource/status")
+    @Operation(summary = "Get available datasource executors status",
+            description = "Get status of available datasource executors for periodic alerts")
+    public ResponseEntity<Message<Map<String, Object>>> getDatasourceStatus() {
+        Map<String, Object> status = dataSourceService.getAvailableExecutors();
+        return ResponseEntity.ok(Message.successWithData(status));
     }
 
 }

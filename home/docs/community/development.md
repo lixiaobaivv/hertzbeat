@@ -12,47 +12,45 @@ sidebar_label: Development
 
 ### Backend start
 
-1. Requires `maven3+`, `java17` and `lombok` environments
-2. (Optional) Modify the configuration file: `manager/src/main/resources/application.yml`
+1. Requires `maven3+`, `java21` and `lombok` environments
+2. (Optional) Modify the configuration file: `hertzbeat-startup/src/main/resources/application.yml`
 3. Execute under the project root directory: `mvn clean install -DskipTests`
 4. Add VM Options: `--add-opens=java.base/java.nio=org.apache.arrow.memory.core,ALL-UNNAMED`
-5. Start `springboot manager` service: `manager/src/main/java/org/apache/hertzbeat/hertzbeat-manager/Manager.java`
+5. Start `springboot startup` service: `hertzbeat-startup/src/main/java/org/apache/hertzbeat/startup/HertzBeatApplication.java`
 
 ### Frontend start
 
-1. Need `Node Yarn` Environment, Make sure `Node.js >= 18`
+1. Need `Node pnpm` Environment, Make sure `Node.js >= 18`
 
 2. Cd to the `web-app` directory: `cd web-app`
 
-3. Install yarn if not existed `npm install -g yarn`
+3. Install pnpm if not existed `npm install -g pnpm`
 
-4. Install Dependencies: `yarn install` or `yarn install --registry=https://registry.npmmirror.com` in `web-app`
+4. Install Dependencies: `pnpm install` or `pnpm install --registry=https://registry.npmmirror.com` in `web-app`
 
-5. Install angular-cli globally: `yarn global add @angular/cli@15` or `yarn global add @angular/cli@15 --registry=https://registry.npmmirror.com`
+5. After the local backend is started, start the local frontend in the web-app directory: `pnpm start`
 
-6. After the local backend is started, start the local frontend in the web-app directory: `ng serve --open`
-
-7. Browser access to localhost:4200 to start, default account/password is *admin/hertzbeat*
+6. Browser access to localhost:4200 to start, default account/password is *admin/hertzbeat*
 
 ## Build HertzBeat binary package
 
-> Requires `maven3+`, `java17`, `node` and `yarn` environments.
+> Requires `maven3+`, `java21`, `node` and `pnpm` environments.
 
 ### Frontend build
 
-1. Need `Node Yarn` Environment, Make sure `Node.js >= 18`
+1. Need `Node pnpm` Environment, Make sure `Node.js >= 18`
 
 2. Cd to the `web-app` directory: `cd web-app`
 
-3. Install yarn if not existed `npm install -g yarn`
+3. Install pnpm if not existed `npm install -g pnpm`
 
-4. Install Dependencies: `yarn install` or `yarn install --registry=https://registry.npmmirror.com` in `web-app`
+4. Install Dependencies: `pnpm install` or `pnpm install --registry=https://registry.npmmirror.com` in `web-app`
 
-5. Build web-app: `yarn package`
+5. Build web-app: `pnpm package`
 
 ### Backend build
 
-1. Requires `maven3+`, `java17` environments
+1. Requires `maven3+`, `java21` environments
 
 2. Execute under the project root directory: `mvn clean package -Prelease`
 
@@ -60,12 +58,12 @@ The HertzBeat install package will at `dist/hertzbeat-{version}.tar.gz`
 
 ### Collector build
 
-1. Requires `maven3+`, `java17` environments
+1. Requires `maven3+`, `java21` environments
 
 2. Execute under the project root directory: `mvn clean install`
 
-3. Cd to the `collector` directory: `cd collector`
+3. Cd to the `hertzbeat-collector` directory: `cd hertzbeat-collector`
 
-4. Execute under `collector` directory: `mvn clean package -Pcluster`
+4. Execute under `hertzbeat-collector` directory: `mvn clean package -Pcluster`
 
 The HertzBeat collector package will at `dist/hertzbeat-collector-{version}.tar.gz`

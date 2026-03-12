@@ -3,14 +3,11 @@ title: 50天36位贡献者，开源实时监控工具 HertzBeat v1.3.1 发布
 author: tom  
 author_title: tom   
 author_url: https://github.com/tomsun28  
-author_image_url: https://avatars.githubusercontent.com/u/24788200?s=400&v=4  
 tags: [opensource, practice]
 keywords: [open source monitoring system, alerting system, Linux monitoring]
 ---
 
 官网: hertzbeat.com | tancloud.cn
-
-![HertzBeat](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/a9629ef5bb6e486cacddb899f1495c6e~tplv-k3u1fbpfcp-zoom-1.image)
 
 ### What is HertzBeat?
 
@@ -22,11 +19,9 @@ keywords: [open source monitoring system, alerting system, Linux monitoring]
 >
 > 您相信只需定义YML就能立刻适配一款K8s或Docker等新的监控类型吗？
 
-![HertzBeat](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/4236e748f5ac4352b7cf4bb65ccf97aa~tplv-k3u1fbpfcp-zoom-1.image)
+**Github: [https://github.com/apache/hertzbeat](https://github.com/apache/hertzbeat)**
 
-**Github: <https://github.com/apache/hertzbeat>**
-
-**Gitee: <https://gitee.com/hertzbeat/hertzbeat>**
+**Gitee: [https://gitee.com/hertzbeat/hertzbeat](https://gitee.com/hertzbeat/hertzbeat)**
 
 ### v1.3.1 来了
 
@@ -53,8 +48,8 @@ COMMIT;
 
 ## ⛄ 已支持
 
-> 我们将监控采集类型(mysql,jvm,k8s)都定义为yml监控模版，用户可以导入这些模版来支持对应类型的监控!
-> 欢迎大家一起贡献你使用过程中自定义的通用监控类型监控模版。
+> 我们将监控采集类型(mysql,jvm,k8s)都定义为yml监控模板，用户可以导入这些模板来支持对应类型的监控!
+> 欢迎大家一起贡献你使用过程中自定义的通用监控类型监控模板。
 
 - Website, Port Telnet, Http Api, Ping Connect, Jvm, SiteMap, Ssl Certificate, SpringBoot2, FTP Server, SpringBoot3
 - Mysql, PostgreSQL, MariaDB, Redis, ElasticSearch, SqlServer, Oracle, MongoDB, DM, OpenGauss, ClickHouse, IoTDB, Redis Cluster, Redis Sentinel
@@ -62,10 +57,10 @@ COMMIT;
 - Tomcat, Nacos, Zookeeper, RabbitMQ, Flink, Kafka, ShenYu, DynamicTp, Jetty, ActiveMQ
 - Kubernetes, Docker
 - CiscoSwitch, HpeSwitch, HuaweiSwitch, TpLinkSwitch, H3cSwitch
-- 和更多自定义监控模版。
+- 和更多自定义监控模板。
 - 通知支持 Discord Slack Telegram 邮件 钉钉 微信 飞书 短信 Webhook。
 
 ---
 
-**Github: <https://github.com/apache/hertzbeat>**
-**Gitee: <https://gitee.com/hertzbeat/hertzbeat>**
+**Github: [https://github.com/apache/hertzbeat](https://github.com/apache/hertzbeat)**
+**Gitee: [https://gitee.com/hertzbeat/hertzbeat](https://gitee.com/hertzbeat/hertzbeat)**

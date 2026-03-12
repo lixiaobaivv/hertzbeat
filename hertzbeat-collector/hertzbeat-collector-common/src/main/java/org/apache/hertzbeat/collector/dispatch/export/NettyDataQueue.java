@@ -19,11 +19,13 @@ package org.apache.hertzbeat.collector.dispatch.export;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hertzbeat.collector.dispatch.entrance.internal.CollectJobService;
-import org.apache.hertzbeat.common.entity.alerter.Alert;
+import org.apache.hertzbeat.common.entity.log.LogEntry;
 import org.apache.hertzbeat.common.entity.message.CollectRep;
 import org.apache.hertzbeat.common.queue.CommonDataQueue;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
+
+import java.util.List;
 
 /**
  * for collector instance
@@ -60,25 +62,17 @@ public class NettyDataQueue implements CommonDataQueue {
     }
 
     @Override
-    public void sendAlertsData(Alert alert) {}
-
-    @Override
-    public Alert pollAlertsData() throws InterruptedException {
+    public CollectRep.MetricsData pollMetricsDataToAlerter() {
         return null;
     }
 
     @Override
-    public CollectRep.MetricsData pollMetricsDataToAlerter() throws InterruptedException {
+    public CollectRep.MetricsData pollMetricsDataToStorage() {
         return null;
     }
 
     @Override
-    public CollectRep.MetricsData pollMetricsDataToStorage() throws InterruptedException {
-        return null;
-    }
-
-    @Override
-    public CollectRep.MetricsData pollServiceDiscoveryData() throws InterruptedException {
+    public CollectRep.MetricsData pollServiceDiscoveryData() {
         return null;
     }
 
@@ -95,5 +89,45 @@ public class NettyDataQueue implements CommonDataQueue {
     @Override
     public void sendServiceDiscoveryData(CollectRep.MetricsData metricsData) {
         collectJobService.sendAsyncServiceDiscoveryData(metricsData);
+    }
+
+    @Override
+    public void sendLogEntry(LogEntry logEntry) {
+
+    }
+
+    @Override
+    public LogEntry pollLogEntry() throws InterruptedException {
+        return null;
+    }
+
+    @Override
+    public void sendLogEntryToStorage(LogEntry logEntry) {
+
+    }
+
+    @Override
+    public LogEntry pollLogEntryToStorage() throws InterruptedException {
+        return null;
+    }
+
+    @Override
+    public void sendLogEntryToAlertBatch(List<LogEntry> logEntries) {
+
+    }
+
+    @Override
+    public List<LogEntry> pollLogEntryToAlertBatch(int maxBatchSize) throws InterruptedException {
+        return List.of();
+    }
+
+    @Override
+    public void sendLogEntryToStorageBatch(List<LogEntry> logEntries) {
+
+    }
+
+    @Override
+    public List<LogEntry> pollLogEntryToStorageBatch(int maxBatchSize) throws InterruptedException {
+        return List.of();
     }
 }

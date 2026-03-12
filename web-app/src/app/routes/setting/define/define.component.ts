@@ -28,6 +28,7 @@ import { finalize } from 'rxjs/operators';
 
 import { AppDefineService } from '../../../service/app-define.service';
 import { GeneralConfigService } from '../../../service/general-config.service';
+import { ThemeService } from '../../../service/theme.service';
 
 @Component({
   selector: 'app-define',
@@ -44,6 +45,7 @@ export class DefineComponent implements OnInit {
     private startUpSvc: StartupService,
     private route: ActivatedRoute,
     private router: Router,
+    private themeSvc: ThemeService,
     @Inject(ALAIN_I18N_TOKEN) private i18nSvc: I18NService
   ) {}
 
@@ -54,10 +56,12 @@ export class DefineComponent implements OnInit {
   loading = false;
   code: string = '';
   originalCode: string = '';
-  dark: boolean = true;
+  dark: boolean = false;
+  theme: string = 'default';
   currentApp: any = null;
   saveLoading = false;
   deleteLoading = false;
+  isEditing = false;
 
   ngOnInit(): void {
     this.route.queryParamMap.subscribe((paramMap: ParamMap) => {
@@ -66,6 +70,7 @@ export class DefineComponent implements OnInit {
         this.loadAppDefineContent(this.currentApp);
       }
     });
+    this.theme = this.themeSvc.getTheme() || 'default';
     this.loadMenus();
     this.code = `${this.i18nSvc.fanyi('define.new.code')}\n\n\n\n\n`;
     this.originalCode = this.i18nSvc.fanyi('define.new.code');
@@ -88,6 +93,9 @@ export class DefineComponent implements OnInit {
             let appMenus: Record<string, any> = {};
             message.data.forEach((app: any) => {
               if (app.value == 'prometheus') {
+                return;
+              }
+              if (app.category == '__system__') {
                 return;
               }
               this.appLabel[app.value] = app.label;
@@ -119,6 +127,7 @@ export class DefineComponent implements OnInit {
 
   loadAppDefineContent(app: any) {
     this.loading = true;
+    this.isEditing = false;
     this.currentApp = app;
     const getAppYml$ = this.appDefineSvc
       .getAppDefineYmlContent(app)
@@ -187,6 +196,7 @@ export class DefineComponent implements OnInit {
 
   onNewMonitorDefine() {
     this.currentApp = null;
+    this.isEditing = true;
     this.code = `${this.i18nSvc.fanyi('define.new.code')}\n\n\n\n\n`;
     this.originalCode = this.i18nSvc.fanyi('define.new.code');
   }

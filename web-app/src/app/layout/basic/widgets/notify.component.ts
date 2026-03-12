@@ -7,6 +7,7 @@ import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { finalize } from 'rxjs/operators';
 
 import { Mute } from '../../../pojo/Mute';
+import { SingleAlert } from '../../../pojo/SingleAlert';
 import { AlertSoundService } from '../../../service/alert-sound.service';
 import { AlertService } from '../../../service/alert.service';
 import { GeneralConfigService } from '../../../service/general-config.service';
@@ -42,7 +43,8 @@ import { GeneralConfigService } from '../../../service/general-config.service';
           ngClass="alain-default__nav-item-icon"
           (click)="toggleMute($event)"
           nz-tooltip
-          [nzTooltipTitle]="'common.mute' | i18n"
+          nzTooltipPlacement="bottom"
+          [nzTooltipTitle]="(mute.mute ? 'common.unmute' : 'common.mute') | i18n"
         ></i>
       </nz-badge>
     </div>
@@ -67,9 +69,7 @@ import { GeneralConfigService } from '../../../service/general-config.service';
         }
       </nz-spin>
       <div style="display: flex; align-items: center; border-top: 1px solid #f0f0f0;">
-        <div class="notice-icon__clear" style="flex: 1; border-top: none;" (click)="onClearAllAlerts()">{{ data[0].clearText }} </div>
-        <nz-divider nzType="vertical"></nz-divider>
-        <div class="notice-icon__clear" style="flex: 1; border-top: none;" (click)="gotoAlertCenter()">{{ data[0].enterText }} </div>
+        <div class="notice-icon__clear" style="flex: 1; border-top: none;" (click)="gotoAlertCenter()">{{ data[0].enterText }}</div>
       </div>
     </nz-dropdown-menu>
     <ng-template #listTpl>
@@ -79,7 +79,7 @@ import { GeneralConfigService } from '../../../service/general-config.service';
             <nz-list-item-meta [nzTitle]="nzTitle" [nzDescription]="nzDescription" [nzAvatar]="item.avatar">
               <ng-template #nzTitle>
                 <ng-container *nzStringTemplateOutlet="item.title; context: { $implicit: item }">
-                  <a (click)="gotoDetail(item.monitorId)">{{ item.title }}</a>
+                  <a (click)="gotoDetail(item.id)">{{ item.title }}</a>
                 </ng-container>
                 @if (item.extra) {
                 <div class="notice-icon__item-extra">
@@ -99,19 +99,6 @@ import { GeneralConfigService } from '../../../service/general-config.service';
                 }
               </ng-template>
             </nz-list-item-meta>
-            @if (item.status !== 3) {
-            <ul nz-list-item-actions>
-              <button
-                nz-button
-                nzType="primary"
-                (click)="onMarkReadOneAlert(item.id)"
-                nz-tooltip
-                [nzTooltipTitle]="'alert.center.deal' | i18n"
-              >
-                <i nz-icon nzType="down-circle" nzTheme="outline"></i>
-              </button>
-            </ul>
-            }
           </nz-list-item>
         </ng-template>
       </nz-list>
@@ -130,12 +117,15 @@ export class HeaderNotifyComponent implements OnInit, OnDestroy {
       clearText: this.i18nSvc.fanyi('alert.center.clear')
     }
   ];
+  notifiedAlert: any[] = [];
   count = 0;
   loading = false;
   popoverVisible = false;
   refreshInterval: any;
   private previousCount = 0;
-  mute: Mute = { mute: false };
+  // default to mute status
+  mute: Mute = { mute: true };
+  private eventSource!: EventSource;
   constructor(
     private router: Router,
     @Inject(ALAIN_I18N_TOKEN) private i18nSvc: I18NService,
@@ -168,14 +158,16 @@ export class HeaderNotifyComponent implements OnInit, OnDestroy {
         }
       );
     this.loadData();
-    this.refreshInterval = setInterval(() => {
-      this.loadData();
-    }, 10000); // every 10 seconds refresh the tabs
+    this.initAlertSSEConnection();
+    this.initManagerSSEConnection();
   }
 
   ngOnDestroy() {
     if (this.refreshInterval) {
       clearInterval(this.refreshInterval);
+    }
+    if (this.eventSource) {
+      this.eventSource.close();
     }
   }
 
@@ -201,7 +193,7 @@ export class HeaderNotifyComponent implements OnInit, OnDestroy {
     }
     this.loading = true;
     let loadAlerts$ = this.alertSvc
-      .loadAlerts(0, undefined, undefined, 0, 5)
+      .loadAlerts('firing', undefined, 0, 5)
       .pipe(
         finalize(() => {
           loadAlerts$.unsubscribe();
@@ -220,10 +212,9 @@ export class HeaderNotifyComponent implements OnInit, OnDestroy {
             alerts.forEach(alert => {
               let item = {
                 id: alert.id,
-                monitorId: alert.tags?.monitorId,
                 avatar: '/assets/img/notification.svg',
-                title: `${alert.tags?.monitorName}--${this.i18nSvc.fanyi(`alert.priority.${alert.priority}`)}`,
-                datetime: new Date(alert.lastAlarmTime).toLocaleString(),
+                title: alert.content,
+                datetime: new Date(alert.activeAt).toLocaleString(),
                 color: 'blue',
                 status: alert.status,
                 type: this.i18nSvc.fanyi('dashboard.alerts.title-no')
@@ -231,11 +222,6 @@ export class HeaderNotifyComponent implements OnInit, OnDestroy {
               list.push(item);
             });
             this.data = this.updateNoticeData(list);
-
-            if (page.totalElements > this.previousCount && !this.mute.mute) {
-              this.alertSound.playAlertSound(this.i18nSvc.currentLang);
-            }
-            this.previousCount = page.totalElements;
             this.count = page.totalElements;
           } else {
             console.warn(message.msg);
@@ -248,74 +234,33 @@ export class HeaderNotifyComponent implements OnInit, OnDestroy {
       );
   }
 
-  updateAlertsStatus(alertIds: Set<number>, status: number) {
-    const markAlertsStatus$ = this.alertSvc.applyAlertsStatus(alertIds, status).subscribe(
-      message => {
-        markAlertsStatus$.unsubscribe();
-        if (message.code === 0) {
-          this.notifySvc.success(this.i18nSvc.fanyi('common.notify.mark-success'), '');
-          this.loadData();
-        } else {
-          this.notifySvc.error(this.i18nSvc.fanyi('common.notify.mark-fail'), message.msg);
-        }
-      },
-      error => {
-        markAlertsStatus$.unsubscribe();
-        this.notifySvc.error(this.i18nSvc.fanyi('common.notify.mark-fail'), error.msg);
-      }
-    );
-  }
-
-  onMarkReadOneAlert(alertId: number) {
-    let alerts = new Set<number>();
-    alerts.add(alertId);
-    this.updateAlertsStatus(alerts, 3);
-  }
-
-  clearAllAlerts() {
-    const deleteAlerts$ = this.alertSvc.clearAlerts().subscribe(
-      message => {
-        deleteAlerts$.unsubscribe();
-        if (message.code === 0) {
-          this.notifySvc.success(this.i18nSvc.fanyi('common.notify.clear-success'), '');
-          this.previousCount = 0;
-          this.loadData();
-        } else {
-          this.notifySvc.error(this.i18nSvc.fanyi('common.notify.clear-fail'), message.msg);
-        }
-      },
-      error => {
-        deleteAlerts$.unsubscribe();
-        this.notifySvc.error(this.i18nSvc.fanyi('common.notify.clear-fail'), error.msg);
-      }
-    );
-  }
-
-  onClearAllAlerts() {
-    this.modal.confirm({
-      nzTitle: this.i18nSvc.fanyi('alert.center.confirm.clear-all'),
-      nzOkText: this.i18nSvc.fanyi('common.button.ok'),
-      nzCancelText: this.i18nSvc.fanyi('common.button.cancel'),
-      nzOkDanger: true,
-      nzOkType: 'primary',
-      nzClosable: false,
-      nzOnOk: () => this.clearAllAlerts()
-    });
-  }
-
   gotoAlertCenter(): void {
     this.popoverVisible = false;
     this.router.navigateByUrl(`/alert/center`);
   }
 
-  gotoDetail(monitorId: number): void {
+  gotoDetail(id: number): void {
     this.popoverVisible = false;
-    this.router.navigateByUrl(`/monitors/${monitorId}`);
+    // todo goto this alert detail pop page
+    // this.router.navigateByUrl(`/alarm/center/detail/${id}`);
   }
 
   toggleMute(event: MouseEvent): void {
     event.stopPropagation();
-    let saveConfig$ = this.configSvc.saveGeneralConfig(this.mute, 'mute')
+    const updatedMuteState = !this.mute.mute;
+    const updatedMuteConfig = { ...this.mute, mute: updatedMuteState };
+    // request notification permission
+    debugger;
+    if (!updatedMuteState) {
+      Notification.requestPermission().then(permission => {
+        if (permission !== 'granted') {
+          console.log('Notification permission denied.');
+        }
+      });
+    }
+
+    let saveConfig$ = this.configSvc
+      .saveGeneralConfig(updatedMuteConfig, 'mute')
       .pipe(
         finalize(() => {
           saveConfig$.unsubscribe();
@@ -324,7 +269,7 @@ export class HeaderNotifyComponent implements OnInit, OnDestroy {
       .subscribe({
         next: response => {
           if (response.code === 0) {
-            this.mute.mute = !this.mute.mute;
+            this.mute = updatedMuteConfig;
             console.log('Config saved successfully', response);
           } else {
             console.warn('Error saving config', response.msg);
@@ -337,5 +282,77 @@ export class HeaderNotifyComponent implements OnInit, OnDestroy {
           this.cdr.markForCheck();
         }
       });
+  }
+
+  private initAlertSSEConnection(): void {
+    const sseUrl = '/api/alert/sse/subscribe';
+
+    this.eventSource = new EventSource(sseUrl);
+
+    this.eventSource.addEventListener('ALERT_EVENT', (evt: MessageEvent) => {
+      let list: any[] = [];
+      let alert: SingleAlert = JSON.parse(evt.data);
+      let item = {
+        id: alert.id,
+        avatar: '/assets/img/notification.svg',
+        // title: `${alert.tags?.monitorName}--${this.i18nSvc.fanyi(`alert.severity.${alert.severity}`)}`,
+        title: alert.content,
+        datetime: new Date(alert.activeAt).toLocaleString(),
+        color: 'blue',
+        status: alert.status,
+        type: this.i18nSvc.fanyi('dashboard.alerts.title-no')
+      };
+      console.log('alert:', alert);
+      list.push(item);
+      this.data = this.updateNoticeData(list);
+      if (!this.mute.mute && !this.notifiedAlert.includes(alert.id)) {
+        this.notifiedAlert.push(alert.id);
+        this.alertSound.playAlertSound(this.i18nSvc.currentLang);
+        const notification = new Notification(this.i18nSvc.fanyi('alert.notify.title'), {
+          body: this.i18nSvc.fanyi('alert.notify.body'),
+          icon: 'assets/logo.svg'
+        });
+        notification.onclick = () => {
+          window.focus();
+          this.router.navigateByUrl(`/alert/center`);
+          notification.close();
+        };
+      }
+      this.cdr.detectChanges();
+    });
+    this.eventSource.onerror = error => {
+      console.error('SSE connection error:', error);
+      this.eventSource.close();
+    };
+  }
+
+  private initManagerSSEConnection(): void {
+    const sseUrl = '/api/manager/sse/subscribe';
+    this.eventSource = new EventSource(sseUrl);
+    this.eventSource.addEventListener('IMPORT_TASK_EVENT', (evt: MessageEvent) => {
+      let msg = JSON.parse(evt.data);
+      if (msg.notifyLevel === 'SUCCESS') {
+        this.notifySvc.success(
+          this.i18nSvc.fanyi('common.notice'),
+          this.i18nSvc.fanyi('common.notify.import-success-detail', { taskName: msg.taskName })
+        );
+      } else if (msg.notifyLevel === 'ERROR') {
+        this.notifySvc.error(
+          this.i18nSvc.fanyi('common.notice'),
+          this.i18nSvc.fanyi('common.notify.import-fail-detail', { taskName: msg.taskName, errMsg: msg.errMsg })
+        );
+      } else if (msg.notifyLevel === 'INFO') {
+        this.notifySvc.info(
+          this.i18nSvc.fanyi('common.notice'),
+          this.i18nSvc.fanyi('common.notify.import-progress', { taskName: msg.taskName, progress: msg.progress })
+        );
+      } else {
+        console.error('Parse message error, msg:', evt.data);
+      }
+    });
+    this.eventSource.onerror = error => {
+      console.error('Manager SSE connection error:', error);
+      this.eventSource.close();
+    };
   }
 }

@@ -17,20 +17,30 @@
  * under the License.
  */
 
-import { Tag } from './Tag';
-
 export class Monitor {
   id!: number;
   name!: string;
   app!: string;
-  host!: string;
+  scrape!: string;
+  instance!: string;
   intervals: number = 60;
+  // Schedule type: interval | cron
+  scheduleType: string = 'interval';
+  // Cron expression when scheduleType is cron
+  cronExpression?: string;
   // Monitoring status 0: Paused, 1: Up, 2: Down
   status!: number;
+  // Task type 0: Normal, 1: push auto create, 2: discovery auto create
+  type!: number;
   description!: string;
+  labels!: Record<string, string>;
+  annotations!: Record<string, string>;
   creator!: string;
   modifier!: string;
   gmtCreate!: number;
   gmtUpdate!: number;
-  tags!: Tag[];
+
+  _displayStatus?: 'ACTIVE' | 'DISAPPEARED' | 'GRACE_PERIOD';
+  _graceTimer?: any;
+  _disappearTime?: number;
 }

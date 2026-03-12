@@ -18,12 +18,13 @@
  */
 
 import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges, Inject } from '@angular/core';
-import { FormGroup } from '@angular/forms';
+import { FormGroup, FormControl } from '@angular/forms';
 import { I18NService } from '@core';
 import { ALAIN_I18N_TOKEN } from '@delon/theme';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 
 import { Collector } from '../../../pojo/Collector';
+import { Monitor } from '../../../pojo/Monitor';
 import { Param } from '../../../pojo/Param';
 import { ParamDefine } from '../../../pojo/ParamDefine';
 
@@ -33,7 +34,7 @@ import { ParamDefine } from '../../../pojo/ParamDefine';
   styleUrls: ['./monitor-form.component.less']
 })
 export class MonitorFormComponent implements OnChanges {
-  @Input() monitor!: any;
+  @Input() monitor!: Monitor;
   @Input() grafanaDashboard!: any;
   @Input() loading!: boolean;
   @Input() loadingTip!: string;
@@ -45,18 +46,35 @@ export class MonitorFormComponent implements OnChanges {
   @Input() paramDefines!: ParamDefine[];
   @Input() advancedParamDefines!: ParamDefine[];
   @Input() paramValueMap!: Map<String, Param>;
+  @Input() sdDefines!: ParamDefine[];
+  @Input() sdParams!: Param[];
+  @Input() labelKeys!: string[];
+  @Input() labelMap!: { [key: string]: string[] };
+  @Input() labelIsCustom!: boolean;
 
   @Output() readonly formSubmit = new EventEmitter<any>();
   @Output() readonly formCancel = new EventEmitter<any>();
   @Output() readonly formDetect = new EventEmitter<any>();
   @Output() readonly hostChange = new EventEmitter<string>();
+  @Output() readonly scrapeChange = new EventEmitter<string>();
   @Output() readonly collectorChange = new EventEmitter<string>();
 
   hasAdvancedParams: boolean = false;
+  hostParam: Param | undefined;
 
   constructor(private notifySvc: NzNotificationService, @Inject(ALAIN_I18N_TOKEN) private i18nSvc: I18NService) {}
 
   ngOnChanges(changes: SimpleChanges) {
+    // Initialize scheduleType and cronExpression if not present
+    if (this.monitor && !this.monitor.scheduleType) {
+      this.monitor.scheduleType = 'interval';
+      this.monitor.cronExpression = '';
+    }
+
+    if (changes.params && this.params) {
+      this.hostParam = this.params.find(param => param.field === 'host');
+    }
+
     if (changes.advancedParams && changes.advancedParams.currentValue !== changes.advancedParams.previousValue) {
       for (const advancedParam of changes.advancedParams.currentValue) {
         if (advancedParam.display !== false) {
@@ -86,13 +104,8 @@ export class MonitorFormComponent implements OnChanges {
       });
       return;
     }
-    this.monitor.host = this.monitor.host.trim();
     this.monitor.name = this.monitor.name.trim();
-    // todo Set the host property value separately for now
     this.params.forEach(param => {
-      if (param.field === 'host') {
-        param.paramValue = this.monitor.host;
-      }
       if (param.paramValue != null && typeof param.paramValue == 'string') {
         param.paramValue = (param.paramValue as string).trim();
       }
@@ -102,7 +115,25 @@ export class MonitorFormComponent implements OnChanges {
         param.paramValue = (param.paramValue as string).trim();
       }
     });
-    this.formDetect.emit({ monitor: this.monitor, params: this.params, advancedParams: this.advancedParams, collector: this.collector });
+    this.sdParams.forEach(param => {
+      if (param.paramValue != null && typeof param.paramValue == 'string') {
+        param.paramValue = (param.paramValue as string).trim();
+      }
+    });
+
+    // Set monitor.instance to host param value, let backend handle the port concatenation
+    const hostParam = this.params.find(param => param.field === 'host');
+    if (hostParam) {
+      this.monitor.instance = hostParam.paramValue;
+    }
+
+    this.formDetect.emit({
+      monitor: this.monitor,
+      sdParams: this.sdParams,
+      params: this.params,
+      advancedParams: this.advancedParams,
+      collector: this.collector
+    });
   }
 
   onSubmit(formGroup: FormGroup) {
@@ -115,13 +146,16 @@ export class MonitorFormComponent implements OnChanges {
       });
       return;
     }
-    this.monitor.host = this.monitor.host?.trim();
-    this.monitor.name = this.monitor.name?.trim();
-    // todo Set the host property value separately for now
-    this.params.forEach(param => {
-      if (param.field === 'host') {
-        param.paramValue = this.monitor.host;
+
+    // Validate cron expression if scheduleType is cron
+    if (this.monitor.scheduleType === 'cron') {
+      if (!this.monitor.cronExpression || !this.isValidCronExpression(this.monitor.cronExpression)) {
+        this.notifySvc.error(this.i18nSvc.fanyi('common.error'), this.i18nSvc.fanyi('monitor.cronExpression.invalid'));
+        return;
       }
+    }
+    this.monitor.name = this.monitor.name?.trim();
+    this.params.forEach(param => {
       if (param.paramValue != null && typeof param.paramValue == 'string') {
         param.paramValue = (param.paramValue as string).trim();
       }
@@ -131,8 +165,21 @@ export class MonitorFormComponent implements OnChanges {
         param.paramValue = (param.paramValue as string).trim();
       }
     });
+    this.sdParams.forEach(param => {
+      if (param.paramValue != null && typeof param.paramValue == 'string') {
+        param.paramValue = (param.paramValue as string).trim();
+      }
+    });
+
+    // Set monitor.instance to host param value, let backend handle the port concatenation
+    const hostParam = this.params.find(param => param.field === 'host');
+    if (hostParam) {
+      this.monitor.instance = hostParam.paramValue;
+    }
+
     this.formSubmit.emit({
       monitor: this.monitor,
+      sdParams: this.sdParams,
       params: this.params,
       advancedParams: this.advancedParams,
       collector: this.collector,
@@ -144,22 +191,41 @@ export class MonitorFormComponent implements OnChanges {
     this.formCancel.emit();
   }
 
+  onScrapeChange(scrape: string) {
+    this.scrapeChange.emit(scrape);
+  }
+
   onHostChange(host: string) {
     this.hostChange.emit(host);
   }
 
   onParamBooleanChanged(booleanValue: boolean, field: string) {
-    // For SSL port linkage, port 80 by default is not enabled, but port 443 by default is enabled
-    if (field === 'ssl') {
-      const portParam = this.params.find(param => param.field === 'port');
-      if (portParam) {
-        if (booleanValue && (portParam.paramValue == null || parseInt(portParam.paramValue) === 80)) {
-          portParam.paramValue = 443;
-          this.notifySvc.info(this.i18nSvc.fanyi('common.notice'), this.i18nSvc.fanyi('monitors.new.notify.change-to-https'));
+    if (this.monitor.app === 'api') {
+      if (field === 'ssl') {
+        const portParam = this.params.find(param => param.field === 'port');
+        if (portParam) {
+          if (booleanValue && (portParam.paramValue == null || parseInt(portParam.paramValue) === 80)) {
+            portParam.paramValue = 443;
+            this.notifySvc.info(this.i18nSvc.fanyi('common.notice'), this.i18nSvc.fanyi('monitor.new.notify.change-to-https'));
+          }
+          if (!booleanValue && (portParam.paramValue == null || parseInt(portParam.paramValue) === 443)) {
+            portParam.paramValue = 80;
+            this.notifySvc.info(this.i18nSvc.fanyi('common.notice'), this.i18nSvc.fanyi('monitor.new.notify.change-to-http'));
+          }
         }
-        if (!booleanValue && (portParam.paramValue == null || parseInt(portParam.paramValue) === 443)) {
-          portParam.paramValue = 80;
-          this.notifySvc.info(this.i18nSvc.fanyi('common.notice'), this.i18nSvc.fanyi('monitors.new.notify.change-to-http'));
+      }
+    } else if (this.monitor.app === 'ftp') {
+      if (field === 'ssl') {
+        const portParam = this.params.find(param => param.field === 'port');
+        if (portParam) {
+          if (booleanValue && (portParam.paramValue == null || parseInt(portParam.paramValue) === 21)) {
+            portParam.paramValue = 22;
+            this.notifySvc.info(this.i18nSvc.fanyi('common.notice'), this.i18nSvc.fanyi('monitor.new.notify.change-to-sftp'));
+          }
+          if (!booleanValue && (portParam.paramValue == null || parseInt(portParam.paramValue) === 22)) {
+            portParam.paramValue = 21;
+            this.notifySvc.info(this.i18nSvc.fanyi('common.notice'), this.i18nSvc.fanyi('monitor.new.notify.change-to-ftp'));
+          }
         }
       }
     }
@@ -173,6 +239,17 @@ export class MonitorFormComponent implements OnChanges {
           this.params[index].display = false;
           if (fieldValues.map(String).includes(dependValue)) {
             this.params[index].display = true;
+          }
+        }
+      }
+    });
+    this.sdDefines.forEach((paramDefine, index) => {
+      if (paramDefine.depend) {
+        let fieldValues = new Map(Object.entries(paramDefine.depend)).get(dependField);
+        if (fieldValues) {
+          this.sdParams[index].display = false;
+          if (fieldValues.map(String).includes(dependValue)) {
+            this.sdParams[index].display = true;
           }
         }
       }
@@ -202,5 +279,27 @@ export class MonitorFormComponent implements OnChanges {
         console.log(error);
       };
     }
+  }
+
+  /**
+   * Validate if the given string is a valid cron expression
+   *
+   * @param cronExpression The cron expression to validate
+   * @returns True if the cron expression is valid, false otherwise
+   */
+  isValidCronExpression(cronExpression: string): boolean {
+    if (!cronExpression || cronExpression.trim() === '') {
+      return false;
+    }
+
+    // Enhanced cron expression validation supporting common syntax:
+    // - Standard 5-field and 6-field cron expressions
+    // - Step values (0/30, */30)
+    // - Question mark (?) for day of month/week in Quartz-style expressions
+    // - Ranges (1-5), lists (1,3,5), and wildcards (*)
+    const cronRegex =
+      /^\s*(\*|\*\/[0-9]+|[0-9]+(\/[0-9]+)?|[0-9]+-[0-9]+(\/[0-9]+)?|\?)\s+(\*|\*\/[0-9]+|[0-9]+(\/[0-9]+)?|[0-9]+-[0-9]+(\/[0-9]+)?|\?)\s+(\*|\*\/[0-9]+|[0-9]+(\/[0-9]+)?|[0-9]+-[0-9]+(\/[0-9]+)?|\?)\s+(\*|\*\/[0-9]+|[0-9]+(\/[0-9]+)?|[0-9]+-[0-9]+(\/[0-9]+)?|\?)\s+(\*|\*\/[0-9]+|[0-9]+(\/[0-9]+)?|[0-9]+-[0-9]+(\/[0-9]+)?|\?)(\s+(\*|\*\/[0-9]+|[0-9]+(\/[0-9]+)?|[0-9]+-[0-9]+(\/[0-9]+)?|\?))?\s*$/;
+
+    return cronRegex.test(cronExpression);
   }
 }

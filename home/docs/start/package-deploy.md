@@ -1,16 +1,16 @@
 ---
-id: package-deploy  
-title: Install HertzBeat via Package 
+id: package-deploy
+title: Install HertzBeat via Package
 sidebar_label: Install via Package
 ---
 
 :::tip
-You can install and run Apache HertzBeat (incubating) on Linux Windows Mac system, and CPU supports X86/ARM64.
-Since version 1.6.0 uses `Java 17` and the installation package no longer provides a built-in JDK version, use the new Hertzbeat according to the following situations:
+You can install and run Apache HertzBeat™ on Linux Windows Mac system, and CPU supports X86/ARM64.
+Since version 1.6.0 uses `Java 21` and the installation package no longer provides a built-in JDK version, use the new Hertzbeat according to the following situations:
 
-- When the default environment variable on your server is `Java 17`, you do not need to take any action for this step.
-- When the default environment variable on your server is not `Java 17`, such as `Java 8` or `Java 11`, and if there are no other applications on your server that require a lower version of Java, download the appropriate version from [https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html) according to your system, and search the engine for how to set a new environment variable pointing to the new `Java 17`.
-- When the default environment variable on your server is not `Java 17`, such as `Java 8` or `Java 11`,and you don't want to change the environment variable because if there are other applications on your server that require a lower version of Java, download the appropriate version from [https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html) according to your system, and rename the extracted folder to `java`, then copy it to the Hertzbeat extraction directory.
+- When the default environment variable on your server is `Java 21`, you do not need to take any action for this step.
+- When the default environment variable on your server is not `Java 21`, such as `Java 8` or `Java 11`, and if there are no other applications on your server that require a lower version of Java, download the appropriate version from [https://www.oracle.com/java/technologies/javase/jdk21-archive-downloads.html](https://www.oracle.com/java/technologies/javase/jdk21-archive-downloads.html) according to your system, and search the engine for how to set a new environment variable pointing to the new `Java 21`.
+- When the default environment variable on your server is not `Java 21`, such as `Java 8` or `Java 11`,and you don't want to change the environment variable because if there are other applications on your server that require a lower version of Java, download the appropriate version from [https://www.oracle.com/java/technologies/javase/jdk21-archive-downloads.html](https://www.oracle.com/java/technologies/javase/jdk21-archive-downloads.html) according to your system, and rename the extracted folder to `java`, then copy it to the Hertzbeat extraction directory.
 
 :::
 
@@ -18,7 +18,7 @@ Since version 1.6.0 uses `Java 17` and the installation package no longer provid
 
 1. Download installation package
 
-   Download installation package `apache-hertzbeat-xxx-incubating-bin.tar.gz` corresponding to your system environment
+   Download installation package `apache-hertzbeat-xxx-bin.tar.gz` corresponding to your system environment
    - [Download Page](/docs/download)
 
 2. Configure HertzBeat's configuration file(optional)
@@ -26,7 +26,7 @@ Since version 1.6.0 uses `Java 17` and the installation package no longer provid
    Unzip the installation package to the host eg: /opt/hertzbeat
 
    ```shell
-   tar zxvf apache-hertzbeat-xxx-incubating-bin.tar.gz
+   tar zxvf apache-hertzbeat-xxx-bin.tar.gz
    ```
 
    :::tip
@@ -50,12 +50,12 @@ Since version 1.6.0 uses `Java 17` and the installation package no longer provid
    Execute the startup script in the installation directory `bin/`, or `startup.bat` in windows.
 
    ```shell
-   ./startup.sh 
+   ./startup.sh
    ```
 
 5. Begin to explore HertzBeat
 
-   Access <http://ip:1157/> using browser. You can explore HertzBeat with default account `admin/hertzbeat` now!
+   Access [http://ip:1157/](http://ip:1157/) using browser. You can explore HertzBeat with default account `admin/hertzbeat` now!
 
 ### Deploy HertzBeat Collector Cluster(Optional)
 
@@ -68,7 +68,7 @@ Deploying multiple HertzBeat Collectors can achieve high availability, load bala
 
 1. Download installation package
 
-   Download installation package `apache-hertzbeat-collector-xxx-incubating-bin.tar.gz` corresponding to your system environment
+   Download installation package `apache-hertzbeat-collector-xxx-bin.tar.gz` corresponding to your system environment
    - [Download Page](/docs/download)
 
 2. Configure the collector configuration file
@@ -76,7 +76,7 @@ Deploying multiple HertzBeat Collectors can achieve high availability, load bala
    Unzip the installation package to the host eg: /opt/hertzbeat-collector
 
    ```shell
-   tar zxvf apache-hertzbeat-collector-xxx-incubating-bin.tar.gz
+   tar zxvf apache-hertzbeat-collector-xxx-bin.tar.gz
    ```
 
    Configure the collector configuration yml file `config/application.yml`: unique `identity` name, running `mode` (public or private), hertzbeat `manager-host`, hertzbeat `manager-port`
@@ -117,21 +117,21 @@ Deploying multiple HertzBeat Collectors can achieve high availability, load bala
 1. you need to prepare the JAVA environment in advance
 
    Install JAVA runtime environment-refer to [official website](https://www.oracle.com/java/technologies/downloads/)
-   requirement：JDK17 ENV
+   requirement：JDK21 ENV
    download JAVA installation package: [mirror website](https://mirrors.huaweicloud.com/openjdk/)
    After installation use command line to check whether you install it successfully.
 
    ```shell
    $ java -version
-   java version "17.0.9"
-   Java(TM) SE Runtime Environment 17.0.9 (build 17.0.9+8-LTS-237)
-   Java HotSpot(TM) 64-Bit Server VM 17.0.9 (build 17.0.9+8-LTS-237, mixed mode)
+     openjdk version "21.0.9" 2025-10-21 LTS
+     OpenJDK Runtime Environment Corretto-21.0.9.10.1 (build 21.0.9+10-LTS)
+     OpenJDK 64-Bit Server VM Corretto-21.0.9.10.1 (build 21.0.9+10-LTS, mixed mode, sharing)
 
    ```
 
-2. According to the process deploy，visit <http://ip:1157/> no interface
+2. According to the process deploy，visit [http://ip:1157/](http://ip:1157/) no interface
    Please refer to the following points to troubleshoot issues:
 
-   > 1：If you switch to dependency service MYSQL database，check whether the database is created and started successfully.  
-   > 2：Check whether dependent services, IP account and password configuration is correct in HertzBeat's configuration file `hertzbeat/config/application.yml`.  
+   > 1：If you switch to dependency service MYSQL database，check whether the database is created and started successfully.
+   > 2：Check whether dependent services, IP account and password configuration is correct in HertzBeat's configuration file `hertzbeat/config/application.yml`.
    > 3：Check whether the running log has errors in `hertzbeat/logs/` directory. If you haven't solved the issue, report it to the communication group or community.

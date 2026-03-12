@@ -1,6 +1,6 @@
 {
   "version.label": {
-    "message": "v1.6.x",
+    "message": "dev",
     "description": "The label for version current"
   },
   "sidebar.docs.category.quickstart": {
@@ -45,19 +45,23 @@
   },
   "sidebar.docs.category.server": {
     "message": "服务器监控",
-    "description": "The label for category Server in sidebar docs"
+    "description": "The label for category server in sidebar docs"
   },
   "sidebar.docs.category.mid": {
     "message": "中间件监控",
     "description": "The label for category mid in sidebar docs"
   },
-  "sidebar.docs.category.threshold": {
-    "message": "阈值告警配置",
-    "description": "The label for category threshold in sidebar docs"
+  "sidebar.docs.category.alert": {
+    "message": "阈值告警",
+    "description": "The label for category alert in sidebar docs"
   },
   "sidebar.docs.category.notice": {
-    "message": "告警通知配置",
+    "message": "消息通知",
     "description": "The label for category notice in sidebar docs"
+  },
+  "sidebar.docs.category.service-discovery": {
+    "message": "服务发现",
+    "description": "The label for category service-discovery in sidebar docs"
   },
   "sidebar.docs.category.Others": {
     "message": "其它",
@@ -128,11 +132,11 @@
     "description": "The label for category NGQL in sidebar docs"
   },
   "sidebar.docs.category.llm": {
-    "message": "Ai大模型监控",
+    "message": "AI大模型监控",
     "description": "The label for category llm in sidebar docs"
   },
   "sidebar.docs.category.aiConfig": {
-    "message": "Ai大模型配置",
+    "message": "AI大模型配置",
     "description": "The label for category aiConfig in sidebar docs"
   },
   "sidebar.docs.category.install": {
@@ -158,5 +162,25 @@
   "sidebar.docs.category.extern-deploy": {
     "message": "集成平台部署",
     "description": "The label for category extern-deploy in sidebar docs"
+  },
+  "sidebar.docs.category.quickstart-use-case": {
+    "message": "使用案例",
+    "description": "The label for category quickstart-use-case in sidebar docs"
+  },
+  "sidebar.docs.category.guides-use-case": {
+    "message": "使用案例",
+    "description": "The label for category guides-use-case in sidebar docs"
+  },
+  "sidebar.docs.category.help-custom": {
+    "message": "自定义监控",
+    "description": "The label for category help-custom in sidebar docs"
+  },
+  "sidebar.docs.category.advanced-custom": {
+    "message": "自定义监控",
+    "description": "The label for category advanced-custom in sidebar docs"
+  },
+  "sidebar.docs.category.log": {
+    "message": "日志监控 (Beta)",
+    "description": "The label for category log in sidebar docs"
   }
 }

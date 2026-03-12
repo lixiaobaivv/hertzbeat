@@ -20,10 +20,9 @@ package org.apache.hertzbeat.collector.dispatch.entrance.processor;
 import com.google.protobuf.ByteString;
 import io.netty.channel.ChannelHandlerContext;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.hertzbeat.collector.dispatch.timer.TimerDispatch;
+import org.apache.hertzbeat.collector.timer.TimerDispatch;
 import org.apache.hertzbeat.common.constants.CommonConstants;
 import org.apache.hertzbeat.common.entity.message.ClusterMsg;
-import org.apache.hertzbeat.common.support.SpringContextHolder;
 import org.apache.hertzbeat.remoting.netty.NettyRemotingProcessor;
 
 /**
@@ -32,14 +31,15 @@ import org.apache.hertzbeat.remoting.netty.NettyRemotingProcessor;
  */
 @Slf4j
 public class GoOfflineProcessor implements NettyRemotingProcessor {
-    
-    private TimerDispatch timerDispatch;
+
+    private final TimerDispatch timerDispatch;
+
+    public GoOfflineProcessor(TimerDispatch timerDispatch) {
+        this.timerDispatch = timerDispatch;
+    }
     
     @Override
     public ClusterMsg.Message handle(ChannelHandlerContext ctx, ClusterMsg.Message message) {
-        if (this.timerDispatch == null) {
-            this.timerDispatch = SpringContextHolder.getBean(TimerDispatch.class);
-        }
         timerDispatch.goOffline();
         log.info("receive offline message and handle success");
         if (message.getMsg().toStringUtf8().contains(CommonConstants.COLLECTOR_AUTH_FAILED)) {

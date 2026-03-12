@@ -17,25 +17,28 @@
 
 package org.apache.hertzbeat.alert.service.impl;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.Resource;
+import tools.jackson.core.type.TypeReference;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.hertzbeat.alert.dao.AlertDefineBindDao;
+import org.apache.hertzbeat.alert.calculate.periodic.PeriodicAlertRuleScheduler;
 import org.apache.hertzbeat.alert.dao.AlertDefineDao;
-import org.apache.hertzbeat.alert.dao.AlertMonitorDao;
 import org.apache.hertzbeat.alert.service.AlertDefineImExportService;
 import org.apache.hertzbeat.alert.service.AlertDefineService;
+import org.apache.hertzbeat.alert.service.DataSourceService;
+import org.apache.hertzbeat.base.dao.LabelDao;
+import org.apache.hertzbeat.base.service.LabelService;
+import org.apache.hertzbeat.common.cache.CacheFactory;
+import org.apache.hertzbeat.common.constants.CommonConstants;
 import org.apache.hertzbeat.common.constants.ExportFileConstants;
 import org.apache.hertzbeat.common.constants.SignConstants;
 import org.apache.hertzbeat.common.entity.alerter.AlertDefine;
-import org.apache.hertzbeat.common.entity.alerter.AlertDefineMonitorBind;
-import org.apache.hertzbeat.common.entity.manager.Monitor;
+import org.apache.hertzbeat.common.entity.manager.Label;
 import org.apache.hertzbeat.common.util.FileUtil;
 import org.apache.hertzbeat.common.util.JexlExpressionRunner;
+import org.apache.hertzbeat.common.util.JsonUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -53,13 +56,11 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -74,44 +75,95 @@ public class AlertDefineServiceImpl implements AlertDefineService {
     private AlertDefineDao alertDefineDao;
 
     @Autowired
-    private AlertDefineBindDao alertDefineBindDao;
+    private PeriodicAlertRuleScheduler periodicAlertRuleScheduler;
 
-    @Autowired
-    private AlertMonitorDao alertMonitorDao;
+    @Resource
+    private LabelService labelService;
+
+    @Resource
+    private LabelDao labelDao;
+
+    private final DataSourceService dataSourceService;
 
     private final Map<String, AlertDefineImExportService> alertDefineImExportServiceMap = new HashMap<>();
 
     private static final String CONTENT_TYPE = MediaType.APPLICATION_OCTET_STREAM_VALUE + SignConstants.SINGLE_MARK + "charset=" + StandardCharsets.UTF_8;
 
-    public AlertDefineServiceImpl(List<AlertDefineImExportService> alertDefineImExportServiceList) {
+    private static final Set<String> SYSTEM_BUILT_IN_LABELS = Set.of(
+            CommonConstants.LABEL_INSTANCE,
+            CommonConstants.LABEL_DEFINE_ID,
+            CommonConstants.LABEL_ALERT_NAME,
+            CommonConstants.LABEL_INSTANCE_NAME,
+            CommonConstants.LABEL_ALERT_SEVERITY,
+            CommonConstants.ALERT_MODE_LABEL
+    );
+
+    public AlertDefineServiceImpl(List<AlertDefineImExportService> alertDefineImExportServiceList, DataSourceService dataSourceService) {
         alertDefineImExportServiceList.forEach(it -> alertDefineImExportServiceMap.put(it.type(), it));
+        this.dataSourceService = dataSourceService;
     }
 
     @Override
     public void validate(AlertDefine alertDefine, boolean isModify) throws IllegalArgumentException {
-        // todo
         if (StringUtils.hasText(alertDefine.getExpr())) {
-            try {
-                JexlExpressionRunner.compile(alertDefine.getExpr());
-            } catch (Exception e) {
-                throw new IllegalArgumentException("alert expr error: " + e.getMessage());
+            if (CommonConstants.METRIC_ALERT_THRESHOLD_TYPE_REALTIME.equals(alertDefine.getType())
+                    || CommonConstants.LOG_ALERT_THRESHOLD_TYPE_REALTIME.equals(alertDefine.getType())) {
+                try {
+                    JexlExpressionRunner.compile(alertDefine.getExpr());
+                } catch (Exception e) {
+                    throw new IllegalArgumentException("alert expr error: " + e.getMessage());
+                }
+            }
+        }
+        // the name of the alarm rule is unique
+        Optional<AlertDefine> optional = alertDefineDao.findAlertDefineByName(alertDefine.getName());
+        if (optional.isPresent()) {
+            if (!isModify || !optional.get().getId().equals(alertDefine.getId())) {
+                throw new IllegalArgumentException("alert name already exists");
             }
         }
     }
 
     @Override
     public void addAlertDefine(AlertDefine alertDefine) throws RuntimeException {
-        alertDefineDao.save(alertDefine);
+        saveNewCustomLabel(alertDefine);
+        alertDefine = alertDefineDao.saveAndFlush(alertDefine);
+        periodicAlertRuleScheduler.updateSchedule(alertDefine);
+        CacheFactory.clearAlertDefineCache();
     }
 
     @Override
     public void modifyAlertDefine(AlertDefine alertDefine) throws RuntimeException {
-        alertDefineDao.save(alertDefine);
+        saveNewCustomLabel(alertDefine);
+        alertDefineDao.saveAndFlush(alertDefine);
+        periodicAlertRuleScheduler.updateSchedule(alertDefine);
+        CacheFactory.clearAlertDefineCache();
+    }
+
+    private void saveNewCustomLabel(AlertDefine alertDefine) {
+        Map<String, String> labels = alertDefine.getLabels();
+        if (labels == null) {
+            labels = new HashMap<>(8);
+            alertDefine.setLabels(labels);
+        }
+        Map<String, String> customLabels = labels.entrySet().stream()
+            .filter(entry -> !isSystemBuiltInLabel(entry.getKey()))
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        List<Label> addLabels = labelService.determineNewLabels(customLabels.entrySet());
+        if (!addLabels.isEmpty()) {
+            labelDao.saveAll(addLabels);
+        }
+    }
+
+    private boolean isSystemBuiltInLabel(String labelKey) {
+        return SYSTEM_BUILT_IN_LABELS.contains(labelKey);
     }
 
     @Override
     public void deleteAlertDefine(long alertId) throws RuntimeException {
         alertDefineDao.deleteById(alertId);
+        periodicAlertRuleScheduler.cancelSchedule(alertId);
+        CacheFactory.clearAlertDefineCache();
     }
 
     @Override
@@ -123,56 +175,18 @@ public class AlertDefineServiceImpl implements AlertDefineService {
     @Override
     public void deleteAlertDefines(Set<Long> alertIds) throws RuntimeException {
         alertDefineDao.deleteAlertDefinesByIdIn(alertIds);
-    }
-
-    @Override
-    public Page<AlertDefine> getMonitorBindAlertDefines(Specification<AlertDefine> specification, PageRequest pageRequest) {
-        return alertDefineDao.findAll(specification, pageRequest);
-    }
-
-    @Override
-    public void applyBindAlertDefineMonitors(Long alertId, List<AlertDefineMonitorBind> alertDefineBinds) {
-        // todo checks whether the alarm definition and monitoring exist
-        if (!alertDefineBindDao.existsById(alertId)){
-            alertDefineBindDao.deleteAlertDefineBindsByAlertDefineIdEquals(alertId);
+        for (Long alertId : alertIds) {
+            periodicAlertRuleScheduler.cancelSchedule(alertId);
         }
-        // Delete all associations of this alarm
-        alertDefineBindDao.deleteAlertDefineBindsByAlertDefineIdEquals(alertId);
-        // Save the associated
-        alertDefineBindDao.saveAll(alertDefineBinds);
+        CacheFactory.clearAlertDefineCache();
     }
 
     @Override
-    public Map<String, List<AlertDefine>> getMonitorBindAlertDefines(long monitorId, String app, String metrics) {
-        List<AlertDefine> defines = alertDefineDao.queryAlertDefinesByMonitor(monitorId, app, metrics);
-        List<AlertDefine> defaultDefines = alertDefineDao.queryAlertDefinesByAppAndMetricAndPresetTrueAndEnableTrue(app, metrics);
-        defines.addAll(defaultDefines);
-        Set<AlertDefine> defineSet = defines.stream().filter(item -> item.getField() != null).collect(Collectors.toSet());
-        // The alarm thresholds are defined in ascending order of the alarm severity from 0 to 3.
-        // The lower the number, the higher the alarm is. That is, the alarm is calculated from the highest alarm threshold
-        return defineSet.stream().sorted(Comparator.comparing(AlertDefine::getPriority))
-                .collect(Collectors.groupingBy(AlertDefine::getField));
-    }
-
-    @Override
-    public AlertDefine getMonitorBindAlertAvaDefine(long monitorId, String app, String metrics) {
-        List<AlertDefine> defines = alertDefineDao.queryAlertDefinesByMonitor(monitorId, app, metrics);
-        List<AlertDefine> defaultDefines = alertDefineDao.queryAlertDefinesByAppAndMetricAndPresetTrueAndEnableTrue(app, metrics);
-        defines.addAll(defaultDefines);
-        return defines.stream().findFirst().orElse(null);
-    }
-
-    @Override
-    public Page<AlertDefine> getAlertDefines(List<Long> defineIds, String search, Byte priority, String sort, String order, int pageIndex, int pageSize) {
+    public Page<AlertDefine> getAlertDefines(List<Long> defineIds, String search, String sort, String order, int pageIndex, int pageSize) {
         // parse translation content list
-        ObjectMapper objectMapper = new ObjectMapper();
         List<String> searchList = Collections.emptyList();
         if (StringUtils.hasText(search)) {
-            try {
-                searchList = objectMapper.readValue(URLDecoder.decode(search, StandardCharsets.UTF_8), new TypeReference<>() {});
-            } catch (JsonProcessingException e) {
-                throw new IllegalArgumentException("Failed to parse search parameter", e);
-            }
+            searchList = JsonUtil.fromJson(URLDecoder.decode(search, StandardCharsets.UTF_8), new TypeReference<>() {});
         }
         List<String> finalSearchList = searchList;
         // build search condition
@@ -190,10 +204,10 @@ public class AlertDefineServiceImpl implements AlertDefineService {
                 for (String searchContent : finalSearchList) {
                     searchContent = searchContent.toLowerCase();
                     Predicate predicate = criteriaBuilder.or(
-                            criteriaBuilder.like(criteriaBuilder.lower(root.get("app")), "%" + searchContent + "%"),
-                            criteriaBuilder.like(criteriaBuilder.lower(root.get("metric")), "%" + searchContent + "%"),
-                            criteriaBuilder.like(criteriaBuilder.lower(root.get("field")), "%" + searchContent + "%"),
+                            criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), "%" + searchContent + "%"),
                             criteriaBuilder.like(criteriaBuilder.lower(root.get("expr")), "%" + searchContent + "%"),
+                            criteriaBuilder.like(criteriaBuilder.lower(root.get("labels")), "%" + searchContent + "%"),
+                            criteriaBuilder.like(criteriaBuilder.lower(root.get("annotations")), "%" + searchContent + "%"),
                             criteriaBuilder.like(criteriaBuilder.lower(root.get("template")), "%" + searchContent + "%")
                     );
                     searchPredicates.add(predicate);
@@ -201,38 +215,12 @@ public class AlertDefineServiceImpl implements AlertDefineService {
                 // all search keywords are connected with or
                 andList.add(criteriaBuilder.or(searchPredicates.toArray(new Predicate[0])));
             }
-            if (priority != null) {
-                Predicate predicate = criteriaBuilder.equal(root.get("priority"), priority);
-                andList.add(predicate);
-            }
             Predicate[] predicates = new Predicate[andList.size()];
             return criteriaBuilder.and(andList.toArray(predicates));
         };
         Sort sortExp = Sort.by(new Sort.Order(Sort.Direction.fromString(order), sort));
         PageRequest pageRequest = PageRequest.of(pageIndex, pageSize, sortExp);
         return alertDefineDao.findAll(specification, pageRequest);
-    }
-
-    @Override
-    public List<AlertDefineMonitorBind> getBindAlertDefineMonitors(long alertDefineId) {
-        List<AlertDefineMonitorBind> defineMonitorBinds = alertDefineBindDao.getAlertDefineBindsByAlertDefineIdEquals(alertDefineId);
-        if (defineMonitorBinds == null || defineMonitorBinds.isEmpty()) {
-            return defineMonitorBinds;
-        }
-        List<Long> needLoadMonitorIds = defineMonitorBinds.stream()
-                .filter(bind -> bind.getMonitor() == null)
-                .map(AlertDefineMonitorBind::getMonitorId).toList();
-        if (needLoadMonitorIds.isEmpty()) {
-            return defineMonitorBinds;
-        }
-        Map<Long, Monitor> monitorMap = alertMonitorDao.findAllById(needLoadMonitorIds)
-                .stream().collect(Collectors.toMap(Monitor::getId, Function.identity()));
-        for (AlertDefineMonitorBind bind : defineMonitorBinds) {
-            if (bind.getMonitor() == null) {
-                bind.setMonitor(monitorMap.get(bind.getMonitorId()));
-            }
-        }
-        return defineMonitorBinds;
     }
 
     @Override
@@ -259,5 +247,63 @@ public class AlertDefineServiceImpl implements AlertDefineService {
         }
         var imExportService = alertDefineImExportServiceMap.get(type);
         imExportService.importConfig(file.getInputStream());
+    }
+
+    @Override
+    public List<AlertDefine> getMetricsRealTimeAlertDefines() {
+        List<AlertDefine> alertDefines = CacheFactory.getMetricsAlertDefineCache();
+        if (alertDefines == null) {
+            alertDefines = alertDefineDao.findAlertDefinesByTypeAndEnableTrue(CommonConstants.METRIC_ALERT_THRESHOLD_TYPE_REALTIME);
+            CacheFactory.setMetricsAlertDefineCache(alertDefines);
+        }
+        return alertDefines;
+    }
+
+    @Override
+    public List<AlertDefine> getLogRealTimeAlertDefines() {
+        List<AlertDefine> alertDefines = CacheFactory.getLogAlertDefineCache();
+        if (alertDefines == null) {
+            alertDefines = alertDefineDao.findAlertDefinesByTypeAndEnableTrue(CommonConstants.LOG_ALERT_THRESHOLD_TYPE_REALTIME);
+            CacheFactory.setLogAlertDefineCache(alertDefines);
+        }
+        return alertDefines;
+    }
+
+    @Override
+    public List<Map<String, Object>> getDefinePreview(String datasource, String type, String expr) {
+        if (!StringUtils.hasText(expr) || !StringUtils.hasText(datasource) || !StringUtils.hasText(type)) {
+            return Collections.emptyList();
+        }
+        switch (type) {
+            case CommonConstants.METRIC_ALERT_THRESHOLD_TYPE_PERIODIC:
+                return dataSourceService.calculate(datasource, expr);
+            case CommonConstants.LOG_ALERT_THRESHOLD_TYPE_PERIODIC:
+                // todo support alert expr preview
+                return dataSourceService.query(datasource, expr);
+            default:
+                log.error("Get define preview unsupported type: {}", type);
+                return Collections.emptyList();
+        }
+    }
+
+    @Override
+    public List<AlertDefine> getAlertDefinesByType(String type) {
+        if (!StringUtils.hasText(type)) {
+            throw new IllegalArgumentException("Alert definition type cannot be null or empty");
+        }
+
+        switch (type) {
+            case CommonConstants.METRIC_ALERT_THRESHOLD_TYPE_REALTIME:
+            case CommonConstants.METRIC_ALERT_THRESHOLD_TYPE_PERIODIC:
+            case CommonConstants.LOG_ALERT_THRESHOLD_TYPE_REALTIME:
+            case CommonConstants.LOG_ALERT_THRESHOLD_TYPE_PERIODIC:
+                // Valid type, proceed with query
+                break;
+            default:
+                throw new IllegalArgumentException("Unsupported alert definition type: " + type);
+        }
+
+        // Query enabled alert definitions by type
+        return alertDefineDao.findAlertDefinesByTypeAndEnableTrue(type);
     }
 }

@@ -15,22 +15,23 @@
 # specific language governing permissions and limitations
 # under the License.
 
-FROM openjdk:17-slim-buster
+FROM eclipse-temurin:21-jdk
 
 MAINTAINER Apache HertzBeat "dev@hertzbeat.apache.org"
 
 ARG VERSION
 
 # Install SSH
-RUN apt-get update && apt-get install -y openssh-server 
+RUN  sed -i 's#http://#https://#g' /etc/apt/sources.list.d/ubuntu.sources && \
+    apt-get update && apt-get install -y openssh-server
 RUN mkdir /var/run/sshd
 
-ADD apache-hertzbeat-collector-*-incubating-bin.tar.gz /opt/
+ADD apache-hertzbeat-collector-*-bin.tar.gz /opt/
 
 ENV JAVA_OPTS ""
 ENV TZ=Asia/Shanghai
 ENV LANG=en_US.UTF-8
 
-WORKDIR /opt/apache-hertzbeat-collector-${VERSION}-incubating-bin/
+WORKDIR /opt/apache-hertzbeat-collector-${VERSION}-bin/
 
 ENTRYPOINT ["./bin/entrypoint.sh"]

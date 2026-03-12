@@ -27,8 +27,8 @@
 <nz-divider></nz-divider>
 
 <nz-layout style="height: 100vh; overflow: hidden">
-  <nz-sider nzTheme="light" style="height: 100%; overflow: hidden" [nzTrigger]="null">
-    <app-monitor-select-menu
+  <nz-sider [nzTheme]="theme == 'dark' ? 'dark' : 'light'" style="height: 100%; overflow: hidden" [nzTrigger]="null">
+    <app-monitor-select-list
       [loading]="menuLoading"
       [data]="appMenusArr"
       [selected]="currentApp"
@@ -62,7 +62,7 @@
           <i nz-icon nzType="eye" nzTheme="outline"></i>
         </button>
       </ng-template>
-    </app-monitor-select-menu>
+    </app-monitor-select-list>
   </nz-sider>
   <nz-content style="display: flex; flex-direction: column">
     <app-toolbar wrapperStyle="margin: 8px 8px 4px 8px">
@@ -76,11 +76,19 @@
           {{ 'app-' + currentApp + '.yml' }}
           <i nz-icon nzType="more" nzTheme="outline"></i>
         </button>
+        <button *ngIf="currentApp != null && !isEditing" nz-button nzType="primary" (click)="isEditing = true">
+          <i nz-icon nzType="edit" nzTheme="outline"></i>
+          {{ 'common.button.edit' | i18n }}
+        </button>
+        <button *ngIf="isEditing && currentApp != null" nz-button nzDanger (click)="isEditing = false; code = originalCode">
+          <i nz-icon nzType="close-circle" nzTheme="outline"></i>
+          {{ 'common.button.cancel' | i18n }}
+        </button>
         <button *ngIf="!loading && code != originalCode" nz-button nzType="primary" [nzLoading]="saveLoading" (click)="onSaveAndApply()">
           <i nz-icon nzType="save" nzTheme="outline"></i>
           {{ 'define.save-apply' | i18n }}
         </button>
-        <button *ngIf="currentApp != null" nz-button nzDanger nzType="primary" (click)="onDeleteDefineYml()">
+        <button *ngIf="currentApp != null" nz-button nzDanger (click)="onDeleteDefineYml()">
           <i nz-icon nzType="delete" nzTheme="outline"></i>
           {{ 'define.delete' | i18n : { app: currentApp } }}
         </button>
@@ -102,12 +110,21 @@
     </app-toolbar>
     <div style="flex: 1; margin: 4px 8px 4px 4px">
       <nz-code-editor
+        *ngIf="!isEditing || currentApp == null"
+        class="editor"
+        [nzLoading]="loading"
+        [(ngModel)]="code"
+        [nzEditorMode]="'normal'"
+        [nzEditorOption]="{ language: 'yaml', theme: 'vs', folding: true, automaticLayout: true, readOnly: !isEditing }"
+      ></nz-code-editor>
+      <nz-code-editor
+        *ngIf="isEditing && currentApp != null"
         class="editor"
         [nzLoading]="loading"
         [nzOriginalText]="originalCode"
         [(ngModel)]="code"
         [nzEditorMode]="'diff'"
-        [nzEditorOption]="{ language: 'yaml', theme: 'vs-dark', folding: true, automaticLayout: true }"
+        [nzEditorOption]="{ language: 'yaml', theme: 'vs', folding: true, automaticLayout: true }"
       ></nz-code-editor>
     </div>
   </nz-content>

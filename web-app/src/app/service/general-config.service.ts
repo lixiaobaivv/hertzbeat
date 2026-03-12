@@ -22,6 +22,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { Message } from '../pojo/Message';
+import { ModelProviderConfig } from '../pojo/ModelProviderConfig';
 
 const general_config_uri = '/config';
 
@@ -39,7 +40,19 @@ export class GeneralConfigService {
     return this.http.get<Message<any>>(`${general_config_uri}/${type}`);
   }
 
+  public saveModelProviderConfig(body: ModelProviderConfig): Observable<Message<any>> {
+    return this.http.post<Message<any>>(`${general_config_uri}/provider`, body);
+  }
+
+  public getModelProviderConfig(): Observable<Message<ModelProviderConfig>> {
+    return this.http.get<Message<ModelProviderConfig>>(`${general_config_uri}/provider`);
+  }
+
   public updateAppTemplateConfig(body: any, app: string): Observable<Message<void>> {
     return this.http.put<Message<void>>(`${general_config_uri}/template/${app}`, body);
+  }
+
+  public getTimezones(): Observable<Message<any>> {
+    return this.http.get<Message<any>>(`${general_config_uri}/timezones`);
   }
 }

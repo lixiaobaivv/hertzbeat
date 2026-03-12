@@ -19,6 +19,7 @@ package org.apache.hertzbeat.collector.collect.prometheus;
 
 import static org.apache.hertzbeat.common.constants.SignConstants.RIGHT_DASH;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.net.ConnectException;
 import java.net.UnknownHostException;
@@ -32,10 +33,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.net.ssl.SSLException;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.net.util.Base64;
 import org.apache.hertzbeat.collector.collect.common.http.CommonHttpClient;
 import org.apache.hertzbeat.collector.collect.prometheus.parser.MetricFamily;
-import org.apache.hertzbeat.collector.collect.prometheus.parser.TextParser;
 import org.apache.hertzbeat.collector.dispatch.DispatchConstants;
 import org.apache.hertzbeat.collector.util.CollectUtil;
 import org.apache.hertzbeat.common.constants.CommonConstants;
@@ -44,8 +43,10 @@ import org.apache.hertzbeat.common.constants.SignConstants;
 import org.apache.hertzbeat.common.entity.job.Metrics;
 import org.apache.hertzbeat.common.entity.job.protocol.PrometheusProtocol;
 import org.apache.hertzbeat.common.entity.message.CollectRep;
+import org.apache.hertzbeat.common.util.Base64Util;
 import org.apache.hertzbeat.common.util.CommonUtil;
 import org.apache.hertzbeat.common.util.IpDomainUtil;
+import org.apache.hertzbeat.collector.collect.prometheus.parser.OnlineParser;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpStatus;
@@ -64,7 +65,7 @@ import org.apache.http.impl.auth.DigestScheme;
 import org.apache.http.impl.client.BasicAuthCache;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.protocol.HttpContext;
-import org.apache.http.util.EntityUtils;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.util.StringUtils;
 
@@ -72,12 +73,13 @@ import org.springframework.util.StringUtils;
  * prometheus auto collect
  */
 @Slf4j
-public class PrometheusAutoCollectImpl {
+public class PrometheusAutoCollectImpl implements PrometheusCollect {
     
     private final Set<Integer> defaultSuccessStatusCodes = Stream.of(HttpStatus.SC_OK, HttpStatus.SC_CREATED,
             HttpStatus.SC_ACCEPTED, HttpStatus.SC_MULTIPLE_CHOICES, HttpStatus.SC_MOVED_PERMANENTLY,
             HttpStatus.SC_MOVED_TEMPORARILY).collect(Collectors.toSet());
     
+    @Override
     public List<CollectRep.MetricsData> collect(CollectRep.MetricsData.Builder builder,
                                                 Metrics metrics) {
         try {
@@ -89,9 +91,8 @@ public class PrometheusAutoCollectImpl {
         }
         HttpContext httpContext = createHttpContext(metrics.getPrometheus());
         HttpUriRequest request = createHttpRequest(metrics.getPrometheus());
-        try {
-            CloseableHttpResponse response = CommonHttpClient.getHttpClient()
-                                                     .execute(request, httpContext);
+        try (CloseableHttpResponse response =
+             CommonHttpClient.getHttpClient().execute(request, httpContext)) {
             int statusCode = response.getStatusLine().getStatusCode();
             boolean isSuccessInvoke = defaultSuccessStatusCodes.contains(statusCode);
             log.debug("http response status: {}", statusCode);
@@ -100,25 +101,12 @@ public class PrometheusAutoCollectImpl {
                 builder.setMsg(NetworkConstants.STATUS_CODE + SignConstants.BLANK + statusCode);
                 return null;
             }
-            // todo: The InputStream is directly converted to a String here
-            //       For large data in the Prometheus exporter, this can generate large objects, which could severely impact JVM memory space
-            // todo: Option one: Use InputStream for parsing, but this requires significant code changes
-            //       Option two: Manually trigger garbage collection, which can be referenced from Dubbo for long i
-            String resp = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
-            long collectTime = System.currentTimeMillis();
-            builder.setTime(collectTime);
-            if (resp == null || !StringUtils.hasText(resp)) {
-                log.error("http response content is empty, status: {}.", statusCode);
+            try {
+                return parseResponseByPrometheusExporter(response.getEntity().getContent(), builder);
+            } catch (Exception e) {
+                log.info("parse error: {}.", e.getMessage(), e);
                 builder.setCode(CollectRep.Code.FAIL);
-                builder.setMsg("http response content is empty");
-            } else {
-                try {
-                    return parseResponseByPrometheusExporter(resp, metrics.getAliasFields(), builder);
-                } catch (Exception e) {
-                    log.info("parse error: {}.", e.getMessage(), e);
-                    builder.setCode(CollectRep.Code.FAIL);
-                    builder.setMsg("parse response data error:" + e.getMessage());
-                }   
+                builder.setMsg("parse response data error:" + e.getMessage());
             }
         } catch (ClientProtocolException e1) {
             String errorMsg = CommonUtil.getMessageFromThrowable(e1);
@@ -153,6 +141,7 @@ public class PrometheusAutoCollectImpl {
         return Collections.singletonList(builder.build());
     }
     
+    @Override
     public String supportProtocol() {
         return DispatchConstants.PROTOCOL_PROMETHEUS;
     }
@@ -169,12 +158,15 @@ public class PrometheusAutoCollectImpl {
         }
     }
     
-    private List<CollectRep.MetricsData> parseResponseByPrometheusExporter(String resp, List<String> aliasFields,
-                                                                           CollectRep.MetricsData.Builder builder) {
-        Map<String, MetricFamily> metricFamilyMap = TextParser.textToMetricFamilies(resp);
+    private List<CollectRep.MetricsData> parseResponseByPrometheusExporter(InputStream inputStream, CollectRep.MetricsData.Builder builder) throws IOException {
+        long endTime = System.currentTimeMillis();
+        builder.setTime(endTime);
+        Map<String, MetricFamily> metricFamilyMap = OnlineParser.parseMetrics(inputStream);
         List<CollectRep.MetricsData> metricsDataList = new LinkedList<>();
+        if (metricFamilyMap == null) {
+            return metricsDataList;
+        }
         for (Map.Entry<String, MetricFamily> entry : metricFamilyMap.entrySet()) {
-            builder.clearMetrics();
             builder.clearFields();
             builder.clearValues();
             String metricsName = entry.getKey();
@@ -190,7 +182,7 @@ public class PrometheusAutoCollectImpl {
                             builder.addField(CollectRep.Field.newBuilder().setName(label.getName())
                                     .setType(CommonConstants.TYPE_STRING).setLabel(true).build());
                         });
-                        builder.addField(CollectRep.Field.newBuilder().setName("value")
+                        builder.addField(CollectRep.Field.newBuilder().setName("metric_value")
                                 .setType(CommonConstants.TYPE_NUMBER).setLabel(false).build());
                     }
                     Map<String, String> labelMap = metric.getLabels()
@@ -278,14 +270,14 @@ public class PrometheusAutoCollectImpl {
                 if (StringUtils.hasText(authorization.getBasicAuthUsername())
                             && StringUtils.hasText(authorization.getBasicAuthPassword())) {
                     String authStr = authorization.getBasicAuthUsername() + ":" + authorization.getBasicAuthPassword();
-                    String encodedAuth = new String(Base64.encodeBase64(authStr.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
+                    String encodedAuth = Base64Util.encode(authStr);
                     requestBuilder.addHeader(HttpHeaders.AUTHORIZATION, DispatchConstants.BASIC + " " + encodedAuth);
                 }
             }
         }
 
         // if it has payload, would override post params
-        if (StringUtils.hasLength(protocol.getPayload())) {
+        if (StringUtils.hasLength(protocol.getPayload()) && (HttpMethod.POST.matches(protocol.getMethod()) || HttpMethod.PUT.matches(protocol.getMethod()))) {
             requestBuilder.setEntity(new StringEntity(protocol.getPayload(), StandardCharsets.UTF_8));
         }
         

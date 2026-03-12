@@ -3,7 +3,6 @@ title: Use HertzBeat Monitoring IoTDB
 author: tom  
 author_title: tom   
 author_url: https://github.com/tomsun28  
-author_image_url: https://avatars.githubusercontent.com/u/24788200?s=400&v=4  
 tags: [opensource, practice]
 ---
 
@@ -25,7 +24,7 @@ tags: [opensource, practice]
 #### Prerequisites, you already have IoTDB environment and HertzBeat environment
 
 - IoTDB [deployment and installation documentation](https://iotdb.apache.org/UserGuide/V0.13.x/QuickStart/QuickStart.html)
-- HertzBeat [deployment installation documentation](https://hertzbeat.com/docs/start/docker-deploy)
+- HertzBeat [deployment installation documentation](https://hertzbeat.apache.org/docs/start/docker-deploy)
 
 #### 1. Enable the `metrics` function on the IoTDB side, which will provide interface data in the form of prometheus metrics
 
@@ -41,7 +40,7 @@ tags: [opensource, practice]
        - PROMETHEUS
     ```
 
-2. Restart IoTDB, open a browser or use curl to access <http://ip:9091/metrics>, and you can see the metric data.
+2. Restart IoTDB, open a browser or use curl to access [http://ip:9091/metrics](http://ip:9091/metrics), and you can see the metric data.
 
 #### 2. Add IoTDB monitoring on the HertzBeat monitoring page
 
@@ -54,7 +53,7 @@ tags: [opensource, practice]
 2. Configure the parameters required for monitoring IoTDB
 
     Fill in the IoTDB **service IP** and **monitoring port** (default 9091) on the monitoring page, and finally click OK to add.
-    For other parameters such as **collection interval**, **timeout period**, etc., please refer to [Help Documentation](https://hertzbeat.com/docs/help/iotdb/) <https://hertzbeat.com/docs/help> /iotdb/
+    For other parameters such as **collection interval**, **timeout period**, etc., please refer to [Help Documentation](https://hertzbeat.apache.org/docs/help/iotdb/) [https://hertzbeat.apache.org/docs/help](https://hertzbeat.apache.org/docs/help) /iotdb/
 
     ![HertzBeat](/img/blog/monitor-iotdb-2.png)
 
@@ -96,7 +95,7 @@ tags: [opensource, practice]
 
     Message notification methods support **email, DingTalk, WeChat Work, Feishu, WebHook, SMS**, etc. Here we take the commonly used DingTalk as an example.
 
-   - Refer to this [Help Documentation](https://hertzbeat.com/docs/help/alert_dingtalk) <https://hertzbeat.com/docs/help/alert_dingtalk> to configure the robot on DingTalk and set the security custom keyword `HertzBeat`, get the corresponding `access_token` value.
+   - Refer to this [Help Documentation](https://hertzbeat.apache.org/docs/help/alert_dingtalk) [https://hertzbeat.apache.org/docs/help/alert_dingtalk](https://hertzbeat.apache.org/docs/help/alert_dingtalk) to configure the robot on DingTalk and set the security custom keyword `HertzBeat`, get the corresponding `access_token` value.
    - Configure the receiver parameters in HertzBeat as follows.
 
     【Alarm Notification】->【New Recipient】->【Select DingTalk Robot Notification Method】->【Set DingTalk Robot ACCESS_TOKEN】->【OK】
@@ -123,8 +122,8 @@ Content details: The status of IOTDB node 127.0.0.1 is monitored as OFFLINE, ple
 
 This practical article took us to experience that if HertzBeat is used to monitor the IoTDB database metric data, we can find that HertzBeat, which integrates monitoring-alarm-notification, is more convenient in operation and use, and IoTDB can be included in the monitoring with a simple click on the page, it is no longer necessary to deploy multiple components and write multiple YML configuration files with thresholds.
 
-IoTDB Github: <https://github.com/apache/iotdb>
-HertzBeat Github: <https://github.com/apache/hertzbeat>
+IoTDB Github: [https://github.com/apache/iotdb](https://github.com/apache/iotdb)
+HertzBeat Github: [https://github.com/apache/hertzbeat](https://github.com/apache/hertzbeat)
 
 **Welcome to learn about using Star Support!**
 

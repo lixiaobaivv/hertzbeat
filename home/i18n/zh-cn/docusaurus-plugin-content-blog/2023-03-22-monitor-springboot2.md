@@ -3,7 +3,6 @@ title: 使用 HertzBeat 5分钟搞定 SpringBoot2 监控告警
 author: tom  
 author_title: tom   
 author_url: https://github.com/tomsun28  
-author_image_url: https://avatars.githubusercontent.com/u/24788200?s=400&v=4  
 tags: [opensource, practice]
 keywords: [开源监控系统, SpringBoot监控, 监控告警]
 ---
@@ -18,13 +17,13 @@ keywords: [开源监控系统, SpringBoot监控, 监控告警]
 - 其将Http, Jmx, Ssh, Snmp, Jdbc, Prometheus等协议规范可配置化，只需配置YML就能使用这些协议去自定义采集任何您想要采集的指标。您相信只需配置YML就能立刻适配一个K8s或Docker等新的监控类型吗？
 - HertzBeat 的强大自定义，多类型支持，易扩展，低耦合，希望能帮助开发者和中小团队快速搭建自有监控系统。
 
-Github: <https://github.com/apache/hertzbeat>
+Github: [https://github.com/apache/hertzbeat](https://github.com/apache/hertzbeat)
 
 ### 在 HertzBeat 5分钟搞定对 SpringBoot2 应用的监控
 
 #### 操作前提，您已拥有 SpringBoot2 应用环境和 HertzBeat 环境
 
-- HertzBeat [安装部署文档](https://hertzbeat.com/docs/start/docker-deploy)
+- HertzBeat [安装部署文档](https://hertzbeat.apache.org/docs/start/docker-deploy)
 
 #### 一. 在 SpringBoot2 应用端暴露出`actuator`指标接口，它将提供 metrics 接口数据
 
@@ -90,7 +89,7 @@ Github: <https://github.com/apache/hertzbeat>
 2. 配置新增监控 SpringBoot2 所需参数
 
     在监控页面填写 SpringBoot2应用 **对端IP**，**服务端口**(默认8080)，**账户密码等**，最后点击确定添加即可。
-    其他参数如**采集间隔**，**超时时间**等可以参考帮助文档 <https://hertzbeat.com/docs/help/>
+    其他参数如**采集间隔**，**超时时间**等可以参考帮助文档 [https://hertzbeat.apache.org/docs/help/](https://hertzbeat.apache.org/docs/help/)
 
     ![HertzBeat](/img/blog/monitor-springboot2-2.png)
 
@@ -138,7 +137,7 @@ Github: <https://github.com/apache/hertzbeat>
 
     消息通知方式支持 **邮件，钉钉，企业微信，飞书，WebHook，短信**等，我们这里以常用的钉钉为例。
 
-   - 参照此[帮助文档](https://hertzbeat.com/docs/help/alert_dingtalk) <https://hertzbeat.com/docs/help/alert_dingtalk> 在钉钉端配置机器人，设置安全自定义关键词`HertzBeat`，获取对应`access_token`值。
+   - 参照此[帮助文档](https://hertzbeat.apache.org/docs/help/alert_dingtalk) [https://hertzbeat.apache.org/docs/help/alert_dingtalk](https://hertzbeat.apache.org/docs/help/alert_dingtalk) 在钉钉端配置机器人，设置安全自定义关键词`HertzBeat`，获取对应`access_token`值。
    - 在 HertzBeat 配置接收人参数如下。
 
     【告警通知】->【新增接收人】 ->【选择钉钉机器人通知方式】->【设置钉钉机器人ACCESS_TOKEN】-> 【确定】
@@ -188,8 +187,8 @@ Github: <https://github.com/apache/hertzbeat>
 >
 > `HertzBeat`的强大自定义，多类型支持，易扩展，低耦合，希望能帮助开发者和中小团队快速搭建自有监控系统。
 
-**Github: <https://github.com/apache/hertzbeat>**
-**Gitee: <https://gitee.com/hertzbeat/hertzbeat>**
+**Github: [https://github.com/apache/hertzbeat](https://github.com/apache/hertzbeat)**
+**Gitee: [https://gitee.com/hertzbeat/hertzbeat](https://gitee.com/hertzbeat/hertzbeat)**
 
 ## ⛄ Supported
 

@@ -3,7 +3,6 @@ title: 恭喜 HertzBeat 又迎来了两位新晋社区 Committer
 author: tom  
 author_title: tom   
 author_url: https://github.com/tomsun28  
-author_image_url: https://avatars.githubusercontent.com/u/24788200?s=400&v=4  
 tags: [opensource]
 ---
 
@@ -39,7 +38,7 @@ github：gcdd1993 (进击的阿晨)
 * 实现了对`Redis`数据库的指标监控
 * 优化`spring.factories` 配置项
 * 实现支持了 `Telegram`、`Discord`、`Slack` 的消息通知渠道
-* 使用 `Thymeleaf` 重构了告警文本，告警通知模版更规范化
+* 使用 `Thymeleaf` 重构了告警文本，告警通知模板更规范化
 
 ### 感谢社区小伙伴
 
@@ -107,8 +106,8 @@ github：TJxiaobao
 >
 > `HertzBeat`的强大自定义，多类型支持，易扩展，低耦合，希望能帮助开发者和中小团队快速搭建自有监控系统。
 
-**Github: <https://github.com/apache/hertzbeat>**
-**Gitee: <https://gitee.com/hertzbeat/hertzbeat>**
+**Github: [https://github.com/apache/hertzbeat](https://github.com/apache/hertzbeat)**
+**Gitee: [https://gitee.com/hertzbeat/hertzbeat](https://gitee.com/hertzbeat/hertzbeat)**
 
 ## ⛄ Supported
 

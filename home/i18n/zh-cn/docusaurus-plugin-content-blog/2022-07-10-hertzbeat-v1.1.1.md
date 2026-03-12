@@ -3,13 +3,12 @@ title: 云监控系统 HertzBeat v1.1.1 发布！
 author: tom  
 author_title: tom   
 author_url: https://github.com/tomsun28  
-author_image_url: https://avatars.githubusercontent.com/u/24788200?s=400&v=4  
 tags: [opensource]
 ---
 
 [HertzBeat 赫兹跳动](https://github.com/apache/hertzbeat) 是由 [Dromara](https://dromara.org) 孵化，[TanCloud](https://tancloud.cn) 开源的一个支持网站，API，PING，端口，数据库，全站，操作系统，中间件等监控类型，支持阈值告警，告警通知 (邮箱，webhook，钉钉，企业微信，飞书机器人)，拥有易用友好的可视化操作界面的开源监控告警项目。
 
-**官网: [hertzbeat.com](https://hertzbeat.com) | [tancloud.cn](https://tancloud.cn)**
+**官网: [hertzbeat.com](https://hertzbeat.apache.org) | [tancloud.cn](https://tancloud.cn)**
 
 大家好，HertzBeat v1.1.1 发布啦！这个版本带来了自定义监控增强，采集指标数据可以作为变量赋值给下一个采集。修复了若干bug，提升整体稳定性。
 
@@ -40,7 +39,7 @@ Bugfix.
 8. [[manager] 修改监控页面取消监控功能再启动监控导致多生成jobId，原有监控项目并没有真实取消 #215](https://github.com/apache/hertzbeat/pull/215) contribute by @yangshihui
 9. [[warehouse] 修复tdengine对特殊字段建表失败导致数据无法入库问题 #220](https://github.com/apache/hertzbeat/pull/220)
 
-Online <https://console.tancloud.cn>.
+Online [https://console.tancloud.cn](https://console.tancloud.cn).
 
 Have Fun!
 
@@ -50,7 +49,7 @@ Have Fun!
 > 当然，我们也提供了对应的[SAAS云监控版本](https://console.tancloud.cn)，中小团队和个人无需再为了监控自己的网站资源，而去部署一套繁琐的监控系统，[登录即可免费开始](https://console.tancloud.cn)监控之旅。  
 > HertzBeat 支持自定义监控，只用通过配置YML文件我们就可以自定义需要的监控类型和指标，来满足常见的个性化需求。
 > HertzBeat 模块化，`manager, collector, scheduler, warehouse, alerter` 各个模块解耦合，方便理解与定制开发。
-> HertzBeat 支持更自由化的告警配置(计算表达式)，支持告警通知，告警模版，邮件钉钉微信飞书等及时通知送达  
+> HertzBeat 支持更自由化的告警配置(计算表达式)，支持告警通知，告警模板，邮件钉钉微信飞书等及时通知送达  
 > 欢迎登录 HertzBeat 的 [云环境TanCloud](https://console.tancloud.cn) 试用发现更多。
 > 我们正在快速迭代中，欢迎参与加入共建项目开源生态。
 >
@@ -58,5 +57,5 @@ Have Fun!
 
 **仓库地址**
 
-[Github](https://github.com/apache/hertzbeat) <https://github.com/apache/hertzbeat>
-[Gitee](https://gitee.com/hertzbeat/hertzbeat) <https://gitee.com/hertzbeat/hertzbeat>
+[Github](https://github.com/apache/hertzbeat) [https://github.com/apache/hertzbeat](https://github.com/apache/hertzbeat)
+[Gitee](https://gitee.com/hertzbeat/hertzbeat) [https://gitee.com/hertzbeat/hertzbeat](https://gitee.com/hertzbeat/hertzbeat)

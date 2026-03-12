@@ -4,11 +4,20 @@ title: 关系型数据库使用 Mysql 替换依赖的 H2 存储系统元数据(�
 sidebar_label: 元数据存储Mysql
 ---
 
-MYSQL是一款值得信赖的关系型数据库，Apache HertzBeat (incubating) 除了支持使用默认内置的H2数据库外，还可以切换为使用MYSQL存储监控信息，告警信息，配置信息等结构化关系数据。
+MYSQL是一款值得信赖的关系型数据库，Apache HertzBeat™ 除了支持使用默认内置的H2数据库外，还可以切换为使用MYSQL存储监控信息，告警信息，配置信息等结构化关系数据。
 
-注意⚠️ 使用外置Mysql数据库替换内置H2数据库为可选项，但建议生产环境配置，以提供更好的性能
+注意⚠️ 使用外置MySQL数据库替换内置H2数据库为可选项，但建议生产环境配置，以提供更好的性能
 
-> 如果您已有MYSQL环境，可直接跳到数据库创建那一步。
+> 如果您已有MYSQL环境，并且MYSQL版本符合要求，可直接跳到数据库创建那一步。
+
+### 支持的MYSQL版本
+
+请确保使用支持的 MySQL 版本。HertzBeat 仅支持 MySQL 5.7+ 或 8 版本。你可以通过以下命令查看 MySQL 版本：
+
+```shell
+$ mysql --version
+mysql  Ver 8.0.25 for Linux on x86_64 (MySQL Community Server - GPL)
+```
 
 ### 通过Docker方式安装MYSQL
 
@@ -21,7 +30,7 @@ MYSQL是一款值得信赖的关系型数据库，Apache HertzBeat (incubating) 
    Docker version 20.10.12, build e91ed57
    ```
 
-2. Docker安装MYSQl
+2. Docker安装MYSQL
 
    ```shell
    $ docker run -d --name mysql \
@@ -46,7 +55,7 @@ MYSQL是一款值得信赖的关系型数据库，Apache HertzBeat (incubating) 
 
 ### 添加 MYSQL jdbc 驱动 jar
 
-- 下载 MYSQL jdbc driver jar, 例如 mysql-connector-java-8.0.25.jar. <https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-8.0.25.zip>
+- 下载 MYSQL jdbc driver jar, 例如 mysql-connector-java-8.0.25.jar. [https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-8.0.25.zip](https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-8.0.25.zip)
 - 将此 jar 包拷贝放入 HertzBeat 的安装目录下的 `ext-lib` 目录下.
 
 ### 修改hertzbeat的配置文件application.yml切换数据源
@@ -71,12 +80,13 @@ spring:
 
   jpa:
     show-sql: false
-    database-platform: org.eclipse.persistence.platform.database.MySQLPlatform
     database: h2
+    hibernate:
+      ddl-auto: update
     properties:
-      eclipselink:
-        logging:
-          level: SEVERE
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: true
 ```
 
 具体替换参数如下,需根据mysql环境配置账户密码IP:
@@ -92,16 +102,17 @@ spring:
       max-lifetime: 120000
   jpa:
     show-sql: false
-    database-platform: org.eclipse.persistence.platform.database.MySQLPlatform
     database: mysql
+    hibernate:
+      ddl-auto: update
     properties:
-      eclipselink:
-        logging:
-          level: SEVERE
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
 ```
 
 - 通过docker启动时，建议修改host为宿主机的外网IP地址，包括mysql连接字符串。
 
-> 注意：上述是针对下载安装包的方式，对于本地切换数据源，只需完成[数据库创建](./mysql-change#数据库创建)以及修改`hertzbeat-manager/src/main/resources/application.yml`中的配置即可。
+> 注意：上述是针对下载安装包的方式，对于本地切换数据源，只需完成[数据库创建](./mysql-change#数据库创建)以及修改`hertzbeat-startup/src/main/resources/application.yml`中的配置即可。
 
-**启动 HertzBeat 浏览器访问 <http://ip:1157/> 开始使用HertzBeat进行监控告警，默认账户密码 admin/hertzbeat**
+**启动 HertzBeat 浏览器访问 [http://ip:1157/](http://ip:1157/) 开始使用HertzBeat进行监控告警，默认账户密码 admin/hertzbeat**

@@ -2,22 +2,34 @@ import { CommonModule } from '@angular/common';
 import { NgModule, Type } from '@angular/core';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+import { IconDefinition } from '@ant-design/icons-angular';
+import { RobotOutline, CloseOutline, SendOutline } from '@ant-design/icons-angular/icons';
 import { DelonACLModule } from '@delon/acl';
 import { DelonFormModule } from '@delon/form';
 import { AlainThemeModule } from '@delon/theme';
 import { NzBreadCrumbModule } from 'ng-zorro-antd/breadcrumb';
+import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzCodeEditorModule } from 'ng-zorro-antd/code-editor';
 import { NzDividerComponent } from 'ng-zorro-antd/divider';
+import { NzIconModule } from 'ng-zorro-antd/icon';
+import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzRadioComponent, NzRadioGroupComponent } from 'ng-zorro-antd/radio';
+import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { NzSwitchComponent } from 'ng-zorro-antd/switch';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 
+// Icon to be used for registration
+const icons: IconDefinition[] = [RobotOutline, CloseOutline, SendOutline];
+
+import { AiChatModule } from './components/ai-chat/ai-chat.module';
+import { ConfigurableFieldComponent } from './components/configurable-field/configurable-field.component';
 import { FormFieldComponent } from './components/form-field/form-field.component';
 import { HelpMessageShowComponent } from './components/help-message-show/help-message-show.component';
-import { KeyValueInputComponent } from './components/key-value-input/key-value-input.component';
-import { MetricsFieldInputComponent } from './components/metrics-field-input/metrics-field-input.component';
+import { LabelSelectorComponent } from './components/label-selector/label-selector.component';
+import { MonitorSelectListComponent } from './components/monitor-select-list/monitor-select-list.component';
 import { MonitorSelectMenuComponent } from './components/monitor-select-menu/monitor-select-menu.component';
 import { MultiFuncInputComponent } from './components/multi-func-input/multi-func-input.component';
-import { TagsSelectComponent } from './components/tags-select/tags-select.component';
+import { SqlEditorComponent } from './components/sql-editor/sql-editor.component';
 import { ToolbarComponent } from './components/toolbar/toolbar.component';
 import { ElapsedTimePipe } from './pipe/elapsed-time.pipe';
 import { I18nElsePipe } from './pipe/i18n-else.pipe';
@@ -27,14 +39,15 @@ import { SHARED_ZORRO_MODULES } from './shared-zorro.module';
 
 const ThirdModules: Array<Type<void>> = [];
 const COMPONENTS: Array<Type<void>> = [
-  KeyValueInputComponent,
   MultiFuncInputComponent,
-  TagsSelectComponent,
   HelpMessageShowComponent,
-  MetricsFieldInputComponent,
   ToolbarComponent,
+  ConfigurableFieldComponent,
   FormFieldComponent,
-  MonitorSelectMenuComponent
+  MonitorSelectMenuComponent,
+  MonitorSelectListComponent,
+  LabelSelectorComponent,
+  SqlEditorComponent
 ];
 const DIRECTIVES: Array<Type<void>> = [TimezonePipe, I18nElsePipe, ElapsedTimePipe];
 
@@ -55,7 +68,13 @@ const DIRECTIVES: Array<Type<void>> = [TimezonePipe, I18nElsePipe, ElapsedTimePi
     NzDividerComponent,
     NzRadioGroupComponent,
     NzRadioComponent,
-    NzSwitchComponent
+    NzSwitchComponent,
+    NzButtonModule,
+    NzInputModule,
+    NzIconModule.forChild(icons),
+    NzSpinModule,
+    NzCodeEditorModule,
+    AiChatModule
   ],
   declarations: [...COMPONENTS, ...DIRECTIVES, HelpMessageShowComponent],
   exports: [
@@ -70,7 +89,8 @@ const DIRECTIVES: Array<Type<void>> = [TimezonePipe, I18nElsePipe, ElapsedTimePi
     ...SHARED_ZORRO_MODULES,
     ...ThirdModules,
     ...COMPONENTS,
-    ...DIRECTIVES
+    ...DIRECTIVES,
+    AiChatModule
   ]
 })
 export class SharedModule {}

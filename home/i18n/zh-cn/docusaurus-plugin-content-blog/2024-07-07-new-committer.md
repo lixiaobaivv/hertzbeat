@@ -3,14 +3,13 @@ title: 热烈欢迎 HertzBeat 小伙伴新晋社区 Committer!
 author: crossoverJie
 author_title: crossoverJie
 author_url: https://github.com/crossoverjie
-author_image_url: https://avatars.githubusercontent.com/u/15684156?s=400&v=4
 tags: [opensource, practice]
 keywords: [open source monitoring system, alerting system]
 ---
 
 ![hertzBeat](/img/blog/new-committer.png)
 
-> 🎉非常高兴成为 Apache HertzBeat 项目的 Committer，受社区邀请来做一个自我介绍🥰。
+> 🎉非常高兴成为 Apache HertzBeat™ 项目的 Committer，受社区邀请来做一个自我介绍🥰。
 
 15 年参与工作至今一直在从事后端研发工作，做过业务开发、基础架构和技术管理；现在在一家互联网公司从事基础架构工程师；
 
@@ -28,7 +27,7 @@ keywords: [open source monitoring system, alerting system]
 
 ## 开始贡献
 
-我的第一个 PR 是修改了一个 PR 模版里的错误路径，社区处理的非常快，所以第一次贡献就好感倍增。
+我的第一个 PR 是修改了一个 PR 模板里的错误路径，社区处理的非常快，所以第一次贡献就好感倍增。
 
 于是我便尝试开始阅读 HertzBeat 的一些核心采集代码，发现当时许多逻辑都没有提供单测，所以我就开始补全这些测试。
 
