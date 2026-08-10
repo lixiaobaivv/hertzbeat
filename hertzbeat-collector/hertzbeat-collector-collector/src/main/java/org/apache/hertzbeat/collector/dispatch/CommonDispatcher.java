@@ -175,6 +175,9 @@ public class CommonDispatcher implements MetricsTaskDispatch, CollectDataDispatc
                             .setId(job.getMonitorId())
                             .setTenantId(job.getTenantId())
                             .setApp(job.getApp())
+                            .setLabels(job.getLabels())
+                            .setAnnotations(job.getAnnotations())
+                            .addMetadataAll(job.getMetadata())
                             .setMetrics(metricsTime.getMetrics().getName())
                             .setPriority(metricsTime.getMetrics().getPriority())
                             .setTime(System.currentTimeMillis())
@@ -219,6 +222,8 @@ public class CommonDispatcher implements MetricsTaskDispatch, CollectDataDispatc
         String monitorKey;
         if (metrics.isHasSubTask()) {
             monitorKey = job.getId() + "-" + metrics.getName() + "-sub-" + metrics.getSubTaskId();
+        } else if (metrics.getPrometheus() != null) {
+            monitorKey = String.valueOf(job.getId());
         } else {
             monitorKey = job.getId() + "-" + metrics.getName();
         }

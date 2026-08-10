@@ -15,6 +15,7 @@
             "start/docker-deploy",
             "start/docker-compose-deploy",
             "start/package-deploy",
+            "start/native-collector",
             {
               "type": "link",
               "label": "Install via Helm",
@@ -45,6 +46,7 @@
             "start/victoria-metrics-init",
             "start/iotdb-init",
             "start/influxdb-init",
+            "start/questdb-init",
             "start/postgresql-change",
             "start/mysql-change"
           ]
@@ -243,6 +245,7 @@
             "help/kafka_client",
             "help/pulsar",
             "help/nacos",
+            "help/etcd",
             "help/rabbitmq",
             "help/rocketmq",
             "help/shenyu",
@@ -294,7 +297,12 @@
         {
           "type": "category",
           "label": "llm",
-          "items": ["help/openai","help/deepseek","help/ollama"]
+          "items": [
+            "help/openai",
+            "help/deepseek",
+            "help/ollama",
+            "help/lmstudio"
+          ]
         },
         {
           "type": "category",

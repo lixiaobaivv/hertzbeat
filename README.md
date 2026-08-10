@@ -10,7 +10,6 @@
 </p>
 
 [![Discord](https://img.shields.io/badge/Chat-Discord-7289DA?logo=discord)](https://discord.gg/Fb6M73htGr)
-[![Reddit](https://img.shields.io/badge/Reddit-Community-7289DA?logo=reddit)](https://www.reddit.com/r/hertzbeat/)
 [![Twitter](https://img.shields.io/twitter/follow/hertzbeat1024?logo=twitter)](https://x.com/hertzbeat1024)
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/8139/badge)](https://www.bestpractices.dev/projects/8139)
 [![codecov](https://codecov.io/gh/apache/HertzBeat/branch/master/graph/badge.svg)](https://app.codecov.io/gh/apache/hertzbeat)
@@ -21,13 +20,13 @@
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/apache/hertzbeat)
 [![zread](https://img.shields.io/badge/Ask_Zread-_.svg?style=flat&color=00b0aa&labelColor=000000&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTQuOTYxNTYgMS42MDAxSDIuMjQxNTZDMS44ODgxIDEuNjAwMSAxLjYwMTU2IDEuODg2NjQgMS42MDE1NiAyLjI0MDFWNC45NjAxQzEuNjAxNTYgNS4zMTM1NiAxLjg4ODEgNS42MDAxIDIuMjQxNTYgNS42MDAxSDQuOTYxNTZDNS4zMTUwMiA1LjYwMDEgNS42MDE1NiA1LjMxMzU2IDUuNjAxNTYgNC45NjAxVjIuMjQwMUM1LjYwMTU2IDEuODg2NjQgNS4zMTUwMiAxLjYwMDEgNC45NjE1NiAxLjYwMDFaIiBmaWxsPSIjZmZmIi8%2BCjxwYXRoIGQ9Ik00Ljk2MTU2IDEwLjM5OTlIMi4yNDE1NkMxLjg4ODEgMTAuMzk5OSAxLjYwMTU2IDEwLjY4NjQgMS42MDE1NiAxMS4wMzk5VjEzLjc1OTlDMS42MDE1NiAxNC4xMTM0IDEuODg4MSAxNC4zOTk5IDIuMjQxNTYgMTQuMzk5OUg0Ljk2MTU2QzUuMzE1MDIgMTQuMzk5OSA1LjYwMTU2IDE0LjExMzQgNS42MDE1NiAxMy43NTk5VjExLjAzOTlDNS42MDE1NiAxMC42ODY0IDUuMzE1MDIgMTAuMzk5OSA0Ljk2MTU2IDEwLjM5OTlaIiBmaWxsPSIjZmZmIi8%2BCjxwYXRoIGQ9Ik0xMy43NTg0IDEuNjAwMUgxMS4wMzg0QzEwLjY4NSAxLjYwMDEgMTAuMzk4NCAxLjg4NjY0IDEwLjM5ODQgMi4yNDAxVjQuOTYwMUMxMC4zOTg0IDUuMzEzNTYgMTAuNjg1IDUuNjAwMSAxMS4wMzg0IDUuNjAwMUgxMy43NTg0QzE0LjExMTkgNS42MDAxIDE0LjM5ODQgNS4zMTM1NiAxNC4zOTg0IDQuOTYwMVYyLjI0MDFDMTQuMzk4NCAxLjg4NjY0IDE0LjExMTkgMS42MDAxIDEzLjc1ODQgMS42MDAxWiIgZmlsbD0iI2ZmZiIvPgo8cGF0aCBkPSJNNCAxMkwxMiA0TDQgMTJaIiBmaWxsPSIjZmZmIi8%2BCjxwYXRoIGQ9Ik00IDEyTDEyIDQiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8L3N2Zz4K&logoColor=ffffff)](https://zread.ai/apache/hertzbeat)
 
-**Home: [hertzbeat.apache.org](https://hertzbeat.apache.org)**   
+**Home: [hertzbeat.apache.org](https://hertzbeat.apache.org)**
 **Email: <a href="mailto:dev-subscribe@hertzbeat.apache.org">Mail to `dev-subscribe@hertzbeat.apache.org`</a> to subscribe mailing lists**
 
 
 ## 🎡 <font color="green">Introduction</font>
 
-[Apache HertzBeat™](https://github.com/apache/hertzbeat) is an AI-powered next-generation open source real-time observability system. Unified metrics and logs collection, centralized alerting distribution, intelligent management and analysis. No Agent required, high performance cluster, provides powerful custom monitoring and status page building capabilities.     
+[Apache HertzBeat™](https://github.com/apache/hertzbeat) is an AI-powered next-generation open source real-time observability system. Unified metrics and logs collection, centralized alerting distribution, intelligent management and analysis. No Agent required, high performance cluster, provides powerful custom monitoring and status page building capabilities.
 
 ### Features
 
@@ -40,71 +39,25 @@
 - High performance, supports horizontal expansion of multi-collector clusters, multi-isolated network monitoring and cloud-edge collaboration.
 - Provides powerful status page building capabilities, easily communicate the real-time status of your service to users.
 
-> HertzBeat's unified platform, AI intelligence, powerful customization, multi-type support, high performance, and easy expansion, aims to help users quickly and conveniently achieve observability requirements.      
+> HertzBeat's unified platform, AI intelligence, powerful customization, multi-type support, high performance, and easy expansion, aims to help users quickly and conveniently achieve observability requirements.
 
 ----
 
 ----
 
-## 🥐 Architecture   
+## 🥐 Architecture
 
-![hertzBeat](home/static/img/docs/hertzbeat-arch.png)
+![HertzBeat](home/static/img/docs/hertzbeat-arch.png)
 
-## ⛄ Supported   
-
-> We define all metrics collection types such as `mysql`, `jvm`, and `k8s` as `YML` templates, allowing users to import them to support corresponding types of monitoring.
-> Welcome everyone to contribute your customized general metrics type YML template during use.
-
-
-- [Website](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-website.yml), [Port Telnet](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-port.yml),
-  [Http Api](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-api.yml), [Ping Connect](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-ping.yml),
-  [Jvm](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-jvm.yml), [SiteMap](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-fullsite.yml),
-  [Ssl Certificate](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-ssl_cert.yml), [SpringBoot2](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-springboot2.yml),
-  [FTP Server](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-ftp.yml), [SpringBoot3](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-springboot3.yml),
-  [Udp Port](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-udp_port.yml), [Dns](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-dns.yml),
-  [Pop3](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-pop3.yml), [Ntp](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-ntp.yml),
-  [Api Code](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-api_code.yml), [Smtp](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-smtp.yml),
-  [Nginx](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-nginx.yml)
-- [Mysql](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-mysql.yml), [PostgreSQL](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-postgresql.yml),
-  [MariaDB](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-mariadb.yml), [Redis](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-redis.yml),
-  [ElasticSearch](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-elasticsearch.yml), [SqlServer](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-sqlserver.yml),
-  [Oracle](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-oracle.yml), [MongoDB](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-mongodb.yml),
-  [DM](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-dm.yml), [OpenGauss](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-opengauss.yml),
-  [ClickHouse](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-clickhouse.yml), [IoTDB](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-iotdb.yml),
-  [Redis Cluster](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-redis_cluster.yml), [Redis Sentinel](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-redis_sentinel.yml)
-  [Doris BE](https://github.com/apache/hertzbeat/blob/master/hertzbeat-manager/src/main/resources/define/app-doris_be.yml), [Doris FE](https://github.com/apache/hertzbeat/blob/master/hertzbeat-manager/src/main/resources/define/app-doris_fe.yml),
-  [Memcached](https://github.com/apache/hertzbeat/blob/master/hertzbeat-manager/src/main/resources/define/app-memcached.yml), [NebulaGraph](https://github.com/apache/hertzbeat/blob/master/hertzbeat-manager/src/main/resources/define/app-nebula_graph.yml)
-- [Linux](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-linux.yml), [Ubuntu](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-ubuntu.yml),
-  [CentOS](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-centos.yml), [Windows](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-windows.yml),
-  [EulerOS](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-euleros.yml), [Fedora CoreOS](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-coreos.yml),
-  [OpenSUSE](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-opensuse.yml), [Rocky Linux](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-rockylinux.yml),
-  [Red Hat](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-redhat.yml), [FreeBSD](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-freebsd.yml),
-  [AlmaLinux](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-almalinux.yml), [Debian Linux](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-debian.yml)
-- [Tomcat](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-tomcat.yml), [Nacos](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-nacos.yml),
-  [Zookeeper](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-zookeeper.yml), [RabbitMQ](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-rabbitmq.yml),
-  [Flink](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-flink.yml), [Kafka](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-kafka.yml),
-  [ShenYu](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-shenyu.yml), [DynamicTp](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-dynamic_tp.yml),
-  [Jetty](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-jetty.yml), [ActiveMQ](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-activemq.yml),
-  [Spring Gateway](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-spring_gateway.yml), [EMQX MQTT](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-emqx.yml),
-  [AirFlow](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-airflow.yml), [Hive](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-hive.yml),
-  [Spark](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-spark.yml), [Hadoop](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-hadoop.yml)
-- [Kubernetes](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-kubernetes.yml), [Docker](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-docker.yml)
-- [CiscoSwitch](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-cisco_switch.yml), [HpeSwitch](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-hpe_switch.yml),
-  [HuaweiSwitch](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-huawei_switch.yml), [TpLinkSwitch](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-tplink_switch.yml),
-  [H3cSwitch](https://raw.githubusercontent.com/apache/hertzbeat/master/hertzbeat-manager/src/main/resources/define/app-h3c_switch.yml)
-- And More Your Custom Template.
-- Notified Support `Discord` `Slack` `Telegram` `Email` `Dingtalk` `WeChat` `FeiShu` `Webhook` `SMS` `ServerChan`.
-
-
-## 🐕 Quick Start   
+## 🐕 Quick Start
 
 - If you wish to deploy HertzBeat locally, please refer to the following Deployment Documentation for instructions.
 
-### 🍞 Install HertzBeat   
+### 🍞 Install HertzBeat
 
-> HertzBeat supports installation through source code, docker or package, cpu support x86/arm64.   
+> HertzBeat supports installation through source code, docker or package, cpu support x86/arm64.
 
-##### 1：Install quickly via docker   
+##### 1：Install quickly via docker
 
 1. Just one command to get started
 
@@ -112,7 +65,7 @@
    docker run -d -p 1157:1157 -p 1158:1158 --name hertzbeat apache/hertzbeat
    ```
 
-2. Access `http://localhost:1157` to start, default account: `admin/hertzbeat`  
+2. Access `http://localhost:1157` to start, default account: `admin/hertzbeat`
 
 3. Deploy collector clusters (Optional)
 
@@ -126,16 +79,16 @@
    - `-e MANAGER_PORT=1158` : set the main hertzbeat server port, default 1158.
 
 
-Detailed config refer to [Install HertzBeat via Docker](https://hertzbeat.apache.org/docs/start/docker-deploy)   
+Detailed config refer to [Install HertzBeat via Docker](https://hertzbeat.apache.org/docs/start/docker-deploy)
 
-##### 2：Install via package  
+##### 2：Install via package
 
-1. Download the release package `hertzbeat-xx.tar.gz` [Download](https://hertzbeat.apache.org/docs/download)
-2. Configure the HertzBeat configuration yml file `hertzbeat/config/application.yml` (optional)  
-3. Run command `$ ./bin/startup.sh ` or `bin/startup.bat`   
-4. Access `http://localhost:1157` to start, default account: `admin/hertzbeat`  
+1. Download the release package `apache-hertzbeat-xx-bin.tar.gz` [Download](https://hertzbeat.apache.org/docs/download)
+2. Configure the HertzBeat configuration yml file `hertzbeat/config/application.yml` (optional)
+3. Run command `$ ./bin/startup.sh ` or `bin/startup.bat`
+4. Access `http://localhost:1157` to start, default account: `admin/hertzbeat`
 5. Deploy collector clusters (Optional)
-    - Download the release package `hertzbeat-collector-xx.tar.gz` to new machine [Download](https://hertzbeat.apache.org/docs/download)
+    - Download the release package `apache-hertzbeat-collector-xx-bin.tar.gz` (JVM collector) or the native collector package for your platform, such as `apache-hertzbeat-collector-native-xx-linux-amd64-bin.tar.gz` or `apache-hertzbeat-collector-native-xx-windows-amd64-bin.zip`, to the new machine [Download](https://hertzbeat.apache.org/docs/download)
     - Configure the collector configuration yml file `hertzbeat-collector/config/application.yml`: unique `identity` name, running `mode` (public or private), hertzbeat `manager-host`, hertzbeat `manager-port`
       ```yaml
       collector:
@@ -148,25 +101,27 @@ Detailed config refer to [Install HertzBeat via Docker](https://hertzbeat.apache
               manager-host: ${MANAGER_HOST:127.0.0.1}
               manager-port: ${MANAGER_PORT:1158}
       ```
-    - Run command `$ ./bin/startup.sh ` or `bin/startup.bat`
-    - Access `http://localhost:1157` and you will see the registered new collector in dashboard 
+    - If you do not provide JDBC drivers in `ext-lib`, MySQL, MariaDB, and OceanBase can use the built-in query engine and run on the native collector package as well. TiDB follows the same rule for its SQL query metric set.
+    - If `mysql-connector-j` is present in `ext-lib`, the built-in server collector or JVM collector automatically prefers JDBC after restart for MySQL, MariaDB, and OceanBase. TiDB follows the same rule for its SQL query metric set, while its HTTP metrics are unchanged. Oracle and DB2 still require the JVM collector package because they depend on external JDBC drivers.
+    - Run `$ ./bin/startup.sh ` or `bin/startup.bat` for the JVM collector package. Run `$ ./bin/startup.sh ` for Linux or macOS native collector packages, and `bin\\startup.bat` for the Windows native collector package.
+    - Access `http://localhost:1157` and you will see the registered new collector in dashboard
 
-Detailed config refer to [Install HertzBeat via Package](https://hertzbeat.apache.org/docs/start/package-deploy)   
+Detailed config refer to [Install HertzBeat via Package](https://hertzbeat.apache.org/docs/start/package-deploy)
 
-##### 3：Start via source code        
+##### 3：Start via source code
 
-1. Local source code debugging needs to start the back-end project `hertzbeat-startup` and the front-end project `web-app`.  
-2. Backend：need `maven3+`, `java21`, `lombok`, add VM options in IDE: ` --add-opens=java.base/java.nio=org.apache.arrow.memory.core,ALL-UNNAMED `, then start the `hertzbeat-startup` service. 
-3. Web：need `nodejs npm angular-cli` environment, Run `ng serve --open` in `web-app` directory after backend startup.  
-4. Access `http://localhost:4200` to start, default account: `admin/hertzbeat`  
+1. Local source code debugging needs to start the back-end project `hertzbeat-startup` and the front-end project `web-app`.
+2. Backend：need `maven3+`, `java25`, `lombok`, add VM options in IDE: ` --add-opens=java.base/java.nio=org.apache.arrow.memory.core,ALL-UNNAMED `, then start the `hertzbeat-startup` service.
+3. Web：need `nodejs` and `pnpm` environment, run `pnpm install` then `pnpm start` in `web-app` directory after backend startup.
+4. Access `http://localhost:4200` to start, default account: `admin/hertzbeat`
 
-Detailed steps refer to [CONTRIBUTING](CONTRIBUTING.md)        
+Detailed steps refer to [CONTRIBUTING](CONTRIBUTING.md)
 
-##### 4：Install All(hertzbeat+postgresql+tsdb) via Docker-compose  
+##### 4：Install All(hertzbeat+postgresql+tsdb) via Docker-compose
 
 Install the postgresql/mysql database, victoria-metrics/iotdb/tdengine database and hertzbeat at one time through [docker-compose deployment script](script/docker-compose).
 
-Detailed steps refer to [Install via Docker-Compose](script/docker-compose/README.md)      
+Detailed steps refer to [Install via Docker-Compose](script/docker-compose/README.md)
 
 ##### 5: Install All(hertzbeat+collector+postgresql+tsdb) via kubernetes helm charts
 
@@ -178,8 +133,8 @@ Detailed steps refer to [Artifact Hub](https://artifacthub.io/packages/helm/hert
 
 ## ✨ Contributors
 
-Thanks to these wonderful people, welcome to join us:     
-[Contributor Guide](CONTRIBUTING.md)   
+Thanks to these wonderful people, welcome to join us:
+[Contributor Guide](CONTRIBUTING.md)
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore-start -->
@@ -550,6 +505,34 @@ Thanks to these wonderful people, welcome to join us:
       <td align="center" valign="top" width="14.28%"><a href="https://shadwal.space/"><img src="https://avatars.githubusercontent.com/u/119167601?v=4?s=100" width="100px;" alt="Sahil Shadwal"/><br /><sub><b>Sahil Shadwal</b></sub></a><br /><a href="https://github.com/apache/hertzbeat/commits?author=Sahil-Shadwal" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/BhanuNidumolu"><img src="https://avatars.githubusercontent.com/u/180380413?v=4?s=100" width="100px;" alt="N.Bhanu Prasad"/><br /><sub><b>N.Bhanu Prasad</b></sub></a><br /><a href="https://github.com/apache/hertzbeat/commits?author=BhanuNidumolu" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://prakashh-portfolio.vercel.app/"><img src="https://avatars.githubusercontent.com/u/183058331?v=4?s=100" width="100px;" alt="Prakash Kumar"/><br /><sub><b>Prakash Kumar</b></sub></a><br /><a href="https://github.com/apache/hertzbeat/commits?author=Prakash1185" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/orangeCatDeveloper"><img src="https://avatars.githubusercontent.com/u/95899648?v=4?s=100" width="100px;" alt="NekoPunch"/><br /><sub><b>NekoPunch</b></sub></a><br /><a href="https://github.com/apache/hertzbeat/commits?author=orangeCatDeveloper" title="Code">💻</a> <a href="https://github.com/apache/hertzbeat/commits?author=orangeCatDeveloper" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://wy471x.github.io/"><img src="https://avatars.githubusercontent.com/u/52033069?v=4?s=100" width="100px;" alt="wy471x"/><br /><sub><b>wy471x</b></sub></a><br /><a href="https://github.com/apache/hertzbeat/commits?author=wy471x" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/hengyuss"><img src="https://avatars.githubusercontent.com/u/81064732?v=4?s=100" width="100px;" alt="hengyuss"/><br /><sub><b>hengyuss</b></sub></a><br /><a href="https://github.com/apache/hertzbeat/commits?author=hengyuss" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://moduvoice.com/"><img src="https://avatars.githubusercontent.com/u/291867022?v=4?s=100" width="100px;" alt="moduvoice"/><br /><sub><b>moduvoice</b></sub></a><br /><a href="https://github.com/apache/hertzbeat/commits?author=moduvoice" title="Documentation">📖</a></td>
+    </tr>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/hutiefang76"><img src="https://avatars.githubusercontent.com/u/137664623?v=4?s=100" width="100px;" alt="hutiefang76"/><br /><sub><b>hutiefang76</b></sub></a><br /><a href="https://github.com/apache/hertzbeat/commits?author=hutiefang76" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://zylatent.com/"><img src="https://avatars.githubusercontent.com/u/250777154?v=4?s=100" width="100px;" alt="柳含知 Liu Hanzhi"/><br /><sub><b>柳含知 Liu Hanzhi</b></sub></a><br /><a href="https://github.com/apache/hertzbeat/commits?author=ZhouYinLong-lab" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/wilmerdooley"><img src="https://avatars.githubusercontent.com/u/259930736?v=4?s=100" width="100px;" alt="wilmerdooley"/><br /><sub><b>wilmerdooley</b></sub></a><br /><a href="https://github.com/apache/hertzbeat/commits?author=wilmerdooley" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/Zmjjeff7"><img src="https://avatars.githubusercontent.com/u/175370943?v=4?s=100" width="100px;" alt="Zhenhong Guo"/><br /><sub><b>Zhenhong Guo</b></sub></a><br /><a href="https://github.com/apache/hertzbeat/commits?author=Zmjjeff7" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/abhyudayareddy"><img src="https://avatars.githubusercontent.com/u/54602866?v=4?s=100" width="100px;" alt="abhyudayareddy"/><br /><sub><b>abhyudayareddy</b></sub></a><br /><a href="https://github.com/apache/hertzbeat/commits?author=abhyudayareddy" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/neon-hippo"><img src="https://avatars.githubusercontent.com/u/165560498?v=4?s=100" width="100px;" alt="neon-hippo"/><br /><sub><b>neon-hippo</b></sub></a><br /><a href="https://github.com/apache/hertzbeat/commits?author=neon-hippo" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/P-Peaceful"><img src="https://avatars.githubusercontent.com/u/52856161?v=4?s=100" width="100px;" alt="P_Peaceful"/><br /><sub><b>P_Peaceful</b></sub></a><br /><a href="https://github.com/apache/hertzbeat/commits?author=P-Peaceful" title="Code">💻</a> <a href="https://github.com/apache/hertzbeat/commits?author=P-Peaceful" title="Documentation">📖</a></td>
+    </tr>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/zhusaidong"><img src="https://avatars.githubusercontent.com/u/3039961?v=4?s=100" width="100px;" alt="zhusaidong"/><br /><sub><b>zhusaidong</b></sub></a><br /><a href="https://github.com/apache/hertzbeat/commits?author=zhusaidong" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/zhehenlu"><img src="https://avatars.githubusercontent.com/u/31504542?v=4?s=100" width="100px;" alt="zhlu"/><br /><sub><b>zhlu</b></sub></a><br /><a href="https://github.com/apache/hertzbeat/commits?author=zhehenlu" title="Code">💻</a> <a href="https://github.com/apache/hertzbeat/commits?author=zhehenlu" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/brettgervasoni"><img src="https://avatars.githubusercontent.com/u/34056000?v=4?s=100" width="100px;" alt="brettgervasoni"/><br /><sub><b>brettgervasoni</b></sub></a><br /><a href="https://github.com/apache/hertzbeat/commits?author=brettgervasoni" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/Darshan-paul"><img src="https://avatars.githubusercontent.com/u/211450705?v=4?s=100" width="100px;" alt="Darshan-paul"/><br /><sub><b>Darshan-paul</b></sub></a><br /><a href="https://github.com/apache/hertzbeat/commits?author=Darshan-paul" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/04cb"><img src="https://avatars.githubusercontent.com/u/111667698?v=4?s=100" width="100px;" alt="layla"/><br /><sub><b>layla</b></sub></a><br /><a href="https://github.com/apache/hertzbeat/commits?author=04cb" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/miantalha45"><img src="https://avatars.githubusercontent.com/u/155809113?v=4?s=100" width="100px;" alt="Talha Amjad"/><br /><sub><b>Talha Amjad</b></sub></a><br /><a href="https://github.com/apache/hertzbeat/commits?author=miantalha45" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://turanalmammadov.com/"><img src="https://avatars.githubusercontent.com/u/16321061?v=4?s=100" width="100px;" alt="Turan Almammadov"/><br /><sub><b>Turan Almammadov</b></sub></a><br /><a href="https://github.com/apache/hertzbeat/commits?author=turanalmammadov" title="Code">💻</a> <a href="https://github.com/apache/hertzbeat/commits?author=turanalmammadov" title="Documentation">📖</a></td>
+    </tr>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/zhaoyangplus"><img src="https://avatars.githubusercontent.com/u/245090302?v=4?s=100" width="100px;" alt="zhaoyangplus"/><br /><sub><b>zhaoyangplus</b></sub></a><br /><a href="https://github.com/apache/hertzbeat/commits?author=zhaoyangplus" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/yexuanyang"><img src="https://avatars.githubusercontent.com/u/73885401?v=4?s=100" width="100px;" alt="Yang Yexuan"/><br /><sub><b>Yang Yexuan</b></sub></a><br /><a href="https://github.com/apache/hertzbeat/commits?author=yexuanyang" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/markguo123"><img src="https://avatars.githubusercontent.com/u/155072651?v=4?s=100" width="100px;" alt="markguo123"/><br /><sub><b>markguo123</b></sub></a><br /><a href="https://github.com/apache/hertzbeat/commits?author=markguo123" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/leo-934"><img src="https://avatars.githubusercontent.com/u/55838224?v=4?s=100" width="100px;" alt="leo"/><br /><sub><b>leo</b></sub></a><br /><a href="https://github.com/apache/hertzbeat/commits?author=leo-934" title="Code">💻</a> <a href="https://github.com/apache/hertzbeat/commits?author=leo-934" title="Documentation">📖</a> <a href="#blog-leo-934" title="Blogposts">📝</a></td>
     </tr>
   </tbody>
 </table>
@@ -557,7 +540,7 @@ Thanks to these wonderful people, welcome to join us:
 <!-- markdownlint-restore -->
 <!-- prettier-ignore-end -->
 
-<!-- ALL-CONTRIBUTORS-LIST:END -->  
+<!-- ALL-CONTRIBUTORS-LIST:END -->
 
 ## 💬 Join discussion
 
@@ -569,13 +552,9 @@ Thanks to these wonderful people, welcome to join us:
 
 WeChat Group : Add friend `ahertzbeat` and invite to the group.
 
-WeChat Public : Search ID `usthecom`.
-
-[QQ Group](https://qm.qq.com/q/xxqecSC2cw) : Group num `1035688434`
+WeChat Official Account : Search ID `usthecom`.
 
 [Github Discussion](https://github.com/apache/hertzbeat/discussions)
-
-[Reddit Community](https://www.reddit.com/r/hertzbeat/)
 
 [Follow Us Twitter](https://x.com/hertzbeat1024)
 
