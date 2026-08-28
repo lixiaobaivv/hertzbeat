@@ -76,19 +76,18 @@ export class MonitorFormComponent implements OnChanges {
     }
 
     if (changes.advancedParams && changes.advancedParams.currentValue !== changes.advancedParams.previousValue) {
-      for (const advancedParam of changes.advancedParams.currentValue) {
-        if (advancedParam.display !== false) {
-          this.hasAdvancedParams = true;
-          break;
-        }
-      }
+      this.hasAdvancedParams = this.advancedParams?.some(param => param.display !== false) ?? false;
     }
     if (changes.paramDefines && changes.paramDefines.currentValue !== changes.paramDefines.previousValue) {
       changes.paramDefines.currentValue.forEach((paramDefine: any) => {
+        const paramVal =
+          this.paramValueMap?.get(paramDefine.field)?.paramValue ??
+          this.params?.find(p => p.field === paramDefine.field)?.paramValue ??
+          paramDefine.defaultValue;
         if (paramDefine.type == 'radio') {
-          this.onDependChanged(this.paramValueMap?.get(paramDefine.field)?.paramValue, paramDefine.field);
+          this.onDependChanged(paramVal, paramDefine.field);
         } else if (paramDefine.type == 'boolean') {
-          this.onParamBooleanChanged(this.paramValueMap?.get(paramDefine.field)?.paramValue, paramDefine.field);
+          this.onParamBooleanChanged(paramVal, paramDefine.field);
         }
       });
     }
@@ -199,16 +198,17 @@ export class MonitorFormComponent implements OnChanges {
     this.hostChange.emit(host);
   }
 
-  onParamBooleanChanged(booleanValue: boolean, field: string) {
+  onParamBooleanChanged(booleanValue: boolean | string, field: string) {
+    const enabled = booleanValue === true || String(booleanValue).toLowerCase() === 'true';
     if (this.monitor.app === 'api') {
       if (field === 'ssl') {
         const portParam = this.params.find(param => param.field === 'port');
         if (portParam) {
-          if (booleanValue && (portParam.paramValue == null || parseInt(portParam.paramValue) === 80)) {
+          if (enabled && (portParam.paramValue == null || parseInt(portParam.paramValue) === 80)) {
             portParam.paramValue = 443;
             this.notifySvc.info(this.i18nSvc.fanyi('common.notice'), this.i18nSvc.fanyi('monitor.new.notify.change-to-https'));
           }
-          if (!booleanValue && (portParam.paramValue == null || parseInt(portParam.paramValue) === 443)) {
+          if (!enabled && (portParam.paramValue == null || parseInt(portParam.paramValue) === 443)) {
             portParam.paramValue = 80;
             this.notifySvc.info(this.i18nSvc.fanyi('common.notice'), this.i18nSvc.fanyi('monitor.new.notify.change-to-http'));
           }
@@ -218,53 +218,61 @@ export class MonitorFormComponent implements OnChanges {
       if (field === 'ssl') {
         const portParam = this.params.find(param => param.field === 'port');
         if (portParam) {
-          if (booleanValue && (portParam.paramValue == null || parseInt(portParam.paramValue) === 21)) {
+          if (enabled && (portParam.paramValue == null || parseInt(portParam.paramValue) === 21)) {
             portParam.paramValue = 22;
             this.notifySvc.info(this.i18nSvc.fanyi('common.notice'), this.i18nSvc.fanyi('monitor.new.notify.change-to-sftp'));
           }
-          if (!booleanValue && (portParam.paramValue == null || parseInt(portParam.paramValue) === 22)) {
+          if (!enabled && (portParam.paramValue == null || parseInt(portParam.paramValue) === 22)) {
             portParam.paramValue = 21;
             this.notifySvc.info(this.i18nSvc.fanyi('common.notice'), this.i18nSvc.fanyi('monitor.new.notify.change-to-ftp'));
           }
         }
       }
     }
+    this.onDependChanged(String(enabled), field);
   }
 
   onDependChanged(dependValue: string, dependField: string) {
-    this.paramDefines.forEach((paramDefine, index) => {
-      if (paramDefine.depend) {
-        let fieldValues = new Map(Object.entries(paramDefine.depend)).get(dependField);
+    this.paramDefines?.forEach((paramDefine, index) => {
+      if (paramDefine.depend && this.params && this.params[index]) {
+        const fieldValues = new Map(Object.entries(paramDefine.depend)).get(dependField);
         if (fieldValues) {
-          this.params[index].display = false;
           if (fieldValues.map(String).includes(dependValue)) {
             this.params[index].display = true;
+          } else {
+            this.params[index].display = false;
+            this.params[index].paramValue = null;
           }
         }
       }
     });
-    this.sdDefines.forEach((paramDefine, index) => {
-      if (paramDefine.depend) {
-        let fieldValues = new Map(Object.entries(paramDefine.depend)).get(dependField);
+    this.sdDefines?.forEach((paramDefine, index) => {
+      if (paramDefine.depend && this.sdParams && this.sdParams[index]) {
+        const fieldValues = new Map(Object.entries(paramDefine.depend)).get(dependField);
         if (fieldValues) {
-          this.sdParams[index].display = false;
           if (fieldValues.map(String).includes(dependValue)) {
             this.sdParams[index].display = true;
+          } else {
+            this.sdParams[index].display = false;
+            this.sdParams[index].paramValue = null;
           }
         }
       }
     });
-    this.advancedParamDefines.forEach((advancedParamDefine, index) => {
-      if (advancedParamDefine.depend) {
-        let fieldValues = new Map(Object.entries(advancedParamDefine.depend)).get(dependField);
+    this.advancedParamDefines?.forEach((advancedParamDefine, index) => {
+      if (advancedParamDefine.depend && this.advancedParams && this.advancedParams[index]) {
+        const fieldValues = new Map(Object.entries(advancedParamDefine.depend)).get(dependField);
         if (fieldValues) {
-          this.advancedParams[index].display = false;
           if (fieldValues.map(String).includes(dependValue)) {
             this.advancedParams[index].display = true;
+          } else {
+            this.advancedParams[index].display = false;
+            this.advancedParams[index].paramValue = null;
           }
         }
       }
     });
+    this.hasAdvancedParams = this.advancedParams?.some(param => param.display !== false) ?? false;
   }
 
   //start grafana
